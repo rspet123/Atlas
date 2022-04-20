@@ -1,6 +1,7 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
+from parser_tools import parse_log
 import pymongo
 
 app = Flask(__name__)
@@ -48,40 +49,9 @@ def get_upload():  # put application's code here
 
 @app.get('/game_log/<log>')
 def log(log):  # put application's code here
-    player_heroes = {}
-    log_stats = {}
-    with open(f"{LOG_FOLDER}/{log}", encoding='utf-8') as log_file:
-        lines = log_file.readlines()
-        for line in lines:
+    data = parse_log(log)
 
-            split_line = line.split(" ", 1)
-            time_stamp = split_line[0]
-            time_stats = split_line[1].split("/")
-            if time_stamp not in log_stats:
-                log_stats[time_stamp] = []
-            curr_stats = list(zip(COLUMNS, time_stats))
-            stat_dict = {}
-            for stat in curr_stats:
-                try:
-                    stat_dict[stat[0]] = float(stat[1])
-                except:
-                    stat_dict[stat[0]] = stat[1]
-            log_stats[time_stamp].append(stat_dict.copy())
-    prev = time_stamp
-    for time in log_stats:
-        for player in log_stats[time]:
-            if player["Player"] not in player_heroes:
-                player_heroes[player["Player"]] = {}
-            if not player["Hero"] == "":
-                player_heroes[player["Player"]][player["Hero"]] = player_heroes[player["Player"]].get(player["Hero"],
-                                                                                                      0) + 3
-        if len(log_stats[time]) < 12:
-            time_stamp = prev
-            break
-        prev = time
-    print(player_heroes)
-
-    return render_template("log.html", COLUMNS=COLUMNS, scoreboard=log_stats[time_stamp], player_heroes=player_heroes)
+    return render_template("log.html", COLUMNS=COLUMNS, scoreboard=data[0], player_heroes=data[1])
 
 
 if __name__ == '__main__':
