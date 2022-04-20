@@ -1,0 +1,13 @@
+.player-hero {
+  position: relative;
+  text-align: center;
+  background-color: #aaaaaa;
+  color: white;
+}
+.centered {
+  position: absolute;
+  top: 75%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+}

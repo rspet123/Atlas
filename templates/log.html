@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/main.css') }}">
+    <meta charset="UTF-8">
+    <title>Log</title>
+</head>
+<body>
+<table border="1">
+    <tr>
+    {% for column in COLUMNS %}
+        <th>{{ column }}</th>
+    {% endfor %}
+    </tr>
+    {% for player in scoreboard %}
+        <tr>
+        {% for key in player %}
+            <td>{{ player[key] }}</td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+<h1>Hero Playtime</h1>
+    {% for player in player_heroes %}
+        <div class="player-hero-list">
+            <h2>{{ player }}</h2>
+            {% for hero in player_heroes[player] %}
+                <div class="player-hero">
+
+                    <object data="https://d1u1mce87gyfbn.cloudfront.net/hero/{{ hero|lower }}/hero-select-portrait.png" alt="{{ hero }}">
+                        <img src="https://d1u1mce87gyfbn.cloudfront.net/hero/soldier-76/hero-select-portrait.png" alt="Fallback">
+                    </object>
+                    <h3 class="centered">{{ hero }}: {{ player_heroes[player][hero] }} Seconds</h3>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</body>
+</html>
