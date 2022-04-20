@@ -1,7 +1,7 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
-
+import pymongo
 app = Flask(__name__)
 COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
            "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
@@ -9,7 +9,7 @@ COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
            "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
            "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt", "Hero", "Team"]
 LOG_FOLDER = "log_folder"
-app.config['UPLOAD_FOLDER'] = LOG_FOLDER
+app.config['UPLOAD_FOLDER'] = LOG_FOLDERdf
 ALLOWED_EXTENSIONS = {'txt'}
 
 
