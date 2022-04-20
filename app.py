@@ -1,6 +1,7 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
+import pymongo
 
 app = Flask(__name__)
 COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
@@ -36,7 +37,7 @@ def post_upload():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return redirect(url_for('log',log=filename))
+        return redirect(url_for('log', log=filename))
     return 'Hello World!'
 
 
@@ -49,11 +50,11 @@ def get_upload():  # put application's code here
 def log(log):  # put application's code here
     player_heroes = {}
     log_stats = {}
-    with open(f"{LOG_FOLDER}/{log}",encoding='utf-8') as log_file:
+    with open(f"{LOG_FOLDER}/{log}", encoding='utf-8') as log_file:
         lines = log_file.readlines()
         for line in lines:
 
-            split_line = line.split(" ",1)
+            split_line = line.split(" ", 1)
             time_stamp = split_line[0]
             time_stats = split_line[1].split("/")
             if time_stamp not in log_stats:
@@ -72,15 +73,15 @@ def log(log):  # put application's code here
             if player["Player"] not in player_heroes:
                 player_heroes[player["Player"]] = {}
             if not player["Hero"] == "":
-                player_heroes[player["Player"]][player["Hero"]]=player_heroes[player["Player"]].get(player["Hero"],0)+3
+                player_heroes[player["Player"]][player["Hero"]] = player_heroes[player["Player"]].get(player["Hero"],
+                                                                                                      0) + 3
         if len(log_stats[time]) < 12:
             time_stamp = prev
             break
         prev = time
     print(player_heroes)
 
-
-    return render_template("log.html",COLUMNS=COLUMNS,scoreboard = log_stats[time_stamp],player_heroes = player_heroes)
+    return render_template("log.html", COLUMNS=COLUMNS, scoreboard=log_stats[time_stamp], player_heroes=player_heroes)
 
 
 if __name__ == '__main__':
