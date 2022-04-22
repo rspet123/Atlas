@@ -162,21 +162,22 @@ def post_signup(id, name):
         pass
 
     #We now get the players ranks
-    #try:
-    #    role_ranks = {}
-    #    ratings = json.loads(requests.get(f"https://ovrstat.com/stats/pc/{str(user.name).replace('#','-')}").text)["ratings"]
-    #    for rating in ratings:
-    #        role_ranks[rating["role"]] = rating['level']
-    #except TypeError:
-    #    # Handle the NoneType error from iterating an empty element, ie the player hasn't placed
-    #    role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
-    #except Exception:
-    #    # Handle any other error, this bnet is busted probably
-    #    # We should do something else here, but not sure what yet
-    #    # TODO
-    #    role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
-
-    role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
+    try:
+        role_ranks = {}
+        ratings = json.loads(requests.get(f"https://ovrstat.com/stats/pc/{str(bnet).replace('#','-')}").text)["ratings"]
+        for rating in ratings:
+            print(f"Role {rating['role']}: {rating['level']}")
+            role_ranks[rating["role"]] = rating['level']
+    except TypeError:
+        # Handle the NoneType error from iterating an empty element, ie the player hasn't placed
+        print(f"Type Error {str(bnet).replace('#','-')}")
+        role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
+    except Exception:
+        # Handle any other error, this bnet is busted probably
+        # We should do something else here, but not sure what yet
+        print(f"Other Error {str(bnet).replace('#', '-')}")
+        # TODO
+        role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
 
 
 

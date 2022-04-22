@@ -1,5 +1,8 @@
-class Queue:
+class PlayerQueue:
     role_queue = {"tank": [], "dps": [], "support": []}
+
+    def __init__(self):
+        self.role_queue = {"tank": [], "dps": [], "support": []}
 
     def queue_up(self, role: str, player: str):
         """Adds a player to the queue in the chosen role"""
