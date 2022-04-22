@@ -19,9 +19,9 @@ CLIENT_ID = config.get("DISCORD", "CLIENT_ID")
 CLIENT_SECRET = config.get("DISCORD", "CLIENT_SECRET")
 CALLBACK = config.get("DISCORD", "CALLBACK")
 
+#Generate Flask Secret key for auth
 key = generate_key()
 app.secret_key = key
-print(key)
 
 # Set up discord auth config
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
@@ -39,12 +39,14 @@ discord = DiscordOAuth2Session(app)
 
 
 def allowed_file(filename):
+    """Checks if our file is of the correct type"""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route('/')
-def hello_world():
+def landing():
+    """Landing page"""
     return redirect(url_for("post_upload"))
 
 
@@ -67,17 +69,20 @@ def post_upload():
 
 @app.route("/login")
 def login():
+    """Redirect to discord auth"""
     return discord.create_session()
 
 
 @app.route("/auth")
 def callback():
+    """Callback for discord auth"""
     discord.callback()
     return (redirect(url_for("curr_user")))
 
 
 @app.errorhandler(Unauthorized)
 def redirect_unauthorized(e):
+    """Errror handler for unauthed user, redirects to login"""
     return redirect(url_for("login"))
 
 
@@ -176,11 +181,13 @@ def post_signup(id, name):
 
 @app.get('/upload')
 def get_upload():
+    """Route for uploading logs to server"""
     return render_template("upload_log.html")
 
 
 @app.get('/game_log/<log>')
 def log(log):
+    """Displays the stats from the selected log"""
     data = parse_log(log)
     return render_template("log.html",
                            COLUMNS=COLUMNS,
@@ -190,6 +197,7 @@ def log(log):
 
 @app.get('/game_log/<log>/<player>')
 def match_player_hero_stats(log,player):
+    """Displays Hero stats for given player in given match"""
     data = parse_log(log)
     hero_stats = parse_hero_stats(data[2])[player]
     return render_template("match_player_hero_stats.html",
