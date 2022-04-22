@@ -6,7 +6,8 @@ from keygen import generate_access_key
 import configparser
 from user import User
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
-
+import requests
+import json
 app = Flask(__name__)
 
 # Get Config Data
@@ -159,11 +160,33 @@ def post_signup(id, name):
     except Exception:
         # This is rly bad code lol
         pass
+
+    #We now get the players ranks
+    #try:
+    #    role_ranks = {}
+    #    ratings = json.loads(requests.get(f"https://ovrstat.com/stats/pc/{str(user.name).replace('#','-')}").text)["ratings"]
+    #    for rating in ratings:
+    #        role_ranks[rating["role"]] = rating['level']
+    #except TypeError:
+    #    # Handle the NoneType error from iterating an empty element, ie the player hasn't placed
+    #    role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
+    #except Exception:
+    #    # Handle any other error, this bnet is busted probably
+    #    # We should do something else here, but not sure what yet
+    #    # TODO
+    #    role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
+
+    role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
+
+
+
+
+
     print(roles)
     user = discord.fetch_user()
     # Placeholder new user object for now
     # As the user class automatically stores the user in the database
-    new_user = User(discord_name, bnet, roles, avatar, id, user.name)
+    new_user = User(discord_name, bnet, roles, avatar, id, user.name,role_ranks)
     return (redirect(url_for("curr_user")))
 
 
