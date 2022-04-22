@@ -9,8 +9,9 @@ class User:
     avatar = ""
     discord_id = ""
     name = ""
+    role_ranks = {}
 
-    def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, id:str, name: str):
+    def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, id:str, name: str,role_ranks:dict):
         self.discord_name = discord_name
         self.bnet_name = bnet_name
         self.preferred_roles = preferred_roles
@@ -18,9 +19,17 @@ class User:
         self.info = ""
         self.avatar = avatar
         self.name = name
+        self.role_ranks = role_ranks
 
 
-        db.users.insert_one({"_id": discord_name, "bnet": bnet_name, "roles": preferred_roles, "info": self.info,"avatar":avatar,"id":id, "name":name})
+        db.users.insert_one({"_id": discord_name,
+                             "bnet": bnet_name,
+                             "roles": preferred_roles,
+                             "info": self.info,
+                             "avatar":avatar,
+                             "id":id,
+                             "name":name,
+                             "ranks":role_ranks})
 
 
     @staticmethod
