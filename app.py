@@ -2,6 +2,7 @@ import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 from parser_tools import parse_log, generate_key
+from keygen import generate_access_key
 import configparser
 from user import User
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
@@ -18,6 +19,14 @@ CALLBACK = config.get("DISCORD", "CALLBACK")
 key = generate_key()
 app.secret_key = key
 print(key)
+MAPS = ['Blizzard World', 'Busan', 'Dorado',
+           'Eichenwalde', 'Hanamura', 'Havana',
+           'Hollywood', 'Ilios', 'Junkertown',
+           'King\'s Row', 'Lijiang Tower', 'Nepal',
+           'Numbani', 'Oasis', 'Rialto',
+           'Route 66', 'Temple of Anubis', 'Volskaya Industries',
+           'Watchpoint: Gibraltar']
+
 COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
            "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
            "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
@@ -111,6 +120,12 @@ def post_signup(id, name):
     user = discord.fetch_user()
     # Through requests we get user information
     bnet = request.form["bnet"]
+    try:
+        key = request.form["key"]
+    except Exception:
+        return render_template("nokey.html")
+    if not key == generate_access_key(id):
+        return render_template("nokey.html")
     discord_name = name
     avatar = user.avatar_url
     roles = []
@@ -155,7 +170,7 @@ def get_upload():
 def log(log):
     data = parse_log(log)
 
-    return render_template("log.html", COLUMNS=COLUMNS, scoreboard=data[0], player_heroes=data[1])
+    return render_template("log.html", COLUMNS=COLUMNS, scoreboard=data[2][data[0]], player_heroes=data[1])
 
 
 if __name__ == '__main__':

@@ -8,9 +8,14 @@
 {{ id }}
 {{ discord_name }}
 <form action="{{ url_for('post_signup',id = id,name=discord_name) }}" method="post">
-        <label for="system">BattleNet:</label>
+        <label for="bnet">BattleNet:</label>
         <label>
             <input type="text" name="bnet" id="bnet">
+        </label>
+        <label for="key">Key:</label>
+        <br>
+        <label>
+            <input type="text" name="key" id="key">
         </label>
         <br>
         <input type="checkbox" id="tank" name="tank" value="Tank">

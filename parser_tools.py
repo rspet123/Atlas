@@ -5,6 +5,11 @@ COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
            "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
            "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
            "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt", "Hero", "Team"]
+STAT_COLUMNS = ["Hero Damage Dealt", "Barrier Damage Dealt",
+           "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
+           "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
+           "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
+           "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt"]
 
 
 def parse_log(log, log_folder ="log_folder", columns=None):
@@ -42,7 +47,7 @@ def parse_log(log, log_folder ="log_folder", columns=None):
             time_stamp = prev
             break
         prev = time
-    return(log_stats[time_stamp],player_heroes)
+    return(time_stamp,player_heroes,log_stats)
 
 def generate_key(size = 24):
     #48 - 122
@@ -50,3 +55,51 @@ def generate_key(size = 24):
     for _ in range(size):
         key+=chr(random.randint(65,122))
     return bytes(key,"ascii")
+
+def diff_stats(players:dict,player:dict,last_tick:dict,stat:str):
+    """Nice helper function for diffing stats between frames"""
+    players[player["Player"]][player["Hero"]][stat] = \
+        players[player["Player"]][player["Hero"]].get(stat, 0) + player[stat] - \
+        last_tick[player["Player"]].get(stat, 0)
+
+
+
+data_template = {"Hero":"", 'Hero Damage Dealt': 0,
+            'Barrier Damage Dealt': 0, 'Damage Blocked': 0.0,
+            'Damage Taken': 0, 'Deaths': 0, 'Eliminations': 0,
+            'Defensive Assists': 0, 'Final Blows': 0,
+            'Environmental Deaths': 0.0, 'Environmental Kills': 0.0,
+            'Healing Dealt': 0.0, 'Multikill Best': 0.0, 'Multikills': 0.0,
+            'Objective Kills': 0, 'Objective Assists': 0.0, 'Solo Kills': 0,
+            'Ultimates Earned': 0, 'Ultimates Used': 0, 'Weapon Accuracy': 0,
+            'All Damage Dealt': 0}
+d = parse_log("Log-2022-04-19-18-46-35.txt")
+final_log = d[2][d[0]]
+players = {}
+last_tick = {}
+for log in d[2]:
+    for player in d[2][log]:
+        if player["Player"] not in players:
+            players[player["Player"]] = {}
+        if player["Player"] not in last_tick:
+            last_tick[player["Player"]] = {}
+
+        print(player['Hero Damage Dealt']-last_tick[player["Player"]].get('Hero Damage Dealt',0))
+        if player["Hero"] not in players[player["Player"]]:
+            players[player["Player"]][player["Hero"]] = {}
+        for stat in STAT_COLUMNS:
+            pass
+            #diff_stats(players, player, last_tick, stat)
+        diff_stats(players, player, last_tick, 'Healing Dealt')
+        diff_stats(players, player, last_tick, 'Hero Damage Dealt')
+        diff_stats(players, player, last_tick, 'Eliminations')
+        diff_stats(players, player, last_tick, 'Damage Taken')
+        diff_stats(players, player, last_tick, 'Damage Blocked')
+        diff_stats(players, player, last_tick, 'Damage Blocked')
+        last_tick[player["Player"]] = player
+
+
+
+
+print(players)
+
