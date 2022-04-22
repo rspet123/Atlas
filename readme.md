@@ -38,3 +38,5 @@ We Currently Use:
 
 ## Credits
 ### Developers
+- Katte (Website and Backend)
+- Archangel (Discord Bot)
