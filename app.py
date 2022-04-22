@@ -8,6 +8,7 @@ from user import User
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
+from ow_info import MAPS,COLUMNS,STAT_COLUMNS
 import turbo_flask #Use this for the queue page
 app = Flask(__name__)
 
@@ -21,25 +22,6 @@ CALLBACK = config.get("DISCORD", "CALLBACK")
 key = generate_key()
 app.secret_key = key
 print(key)
-MAPS = ['Blizzard World', 'Busan', 'Dorado',
-           'Eichenwalde', 'Hanamura', 'Havana',
-           'Hollywood', 'Ilios', 'Junkertown',
-           'King\'s Row', 'Lijiang Tower', 'Nepal',
-           'Numbani', 'Oasis', 'Rialto',
-           'Route 66', 'Temple of Anubis', 'Volskaya Industries',
-           'Watchpoint: Gibraltar']
-
-COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
-           "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
-           "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
-           "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
-           "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt", "Hero", "Team"]
-
-STAT_COLUMNS = ["Hero Damage Dealt", "Barrier Damage Dealt",
-           "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
-           "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
-           "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
-           "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt"]
 
 # Set up discord auth config
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
