@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user["name"] }}</title>
+</head>
+<body>
+<img src="{{ user["avatar"] }}" alt="{{ user["name"] }}">
+<p>Name: {{ user["name"] }}</p>
+<p>Discord: {{ user["_id"] }}</p>
+<p>BattleNet: {{ user["bnet"] }}</p>
+<br>
+<h4>Preferred Roles</h4>
+{% for role in user["roles"]%}
+    <h5>{{ role[1] }}</h5>
+    <img src="{{ role[0] }}" alt="{{ role[1] }}" style="width:128px;height:128px;">
+{% endfor %}
+</body>
+</html>

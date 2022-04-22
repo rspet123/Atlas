@@ -1,3 +1,5 @@
+import random
+
 COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
            "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
            "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
@@ -41,3 +43,10 @@ def parse_log(log, log_folder ="log_folder", columns=None):
             break
         prev = time
     return(log_stats[time_stamp],player_heroes)
+
+def generate_key(size = 24):
+    #48 - 122
+    key = ""
+    for _ in range(size):
+        key+=chr(random.randint(65,122))
+    return bytes(key,"ascii")

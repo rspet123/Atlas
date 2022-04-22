@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup</title>
+</head>
+<body>
+{{ id }}
+{{ discord_name }}
+<form action="{{ url_for('post_signup',id = id,name=discord_name) }}" method="post">
+        <label for="system">BattleNet:</label>
+        <label>
+            <input type="text" name="bnet" id="bnet">
+        </label>
+        <br>
+        <input type="checkbox" id="tank" name="tank" value="Tank">
+        <label for="vehicle1">TANK</label><br>
+        <input type="checkbox" id="support" name="support" value="Support">
+        <label for="vehicle2">SUPPORT</label><br>
+        <input type="checkbox" id="dps" name="dps" value="DPS">
+        <label for="vehicle3">DPS</label><br>
+        <input type="submit" value="Complete Signup">
+    </form>
+</body>
+</html>

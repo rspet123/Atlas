@@ -5,7 +5,7 @@
     <title>Upload Log File</title>
 </head>
 <body>
-
+<li><a href="{{ url_for('login') }}">LOGIN</a></li>
 <h1>Upload new File</h1>
     <form action="{{url_for('post_upload')}}" method=post enctype=multipart/form-data >
       <input type=file name=file>
