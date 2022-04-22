@@ -23,7 +23,7 @@
 <h1>Hero Playtime</h1>
     {% for player in player_heroes %}
         <div class="player-hero-list">
-            <h2>{{ player }}</h2>
+            <h1><a href={{ url_for("match_player_hero_stats",log=log,player=player) }}>{{ player }}</a></h1>
             {% for hero in player_heroes[player] %}
                 <div class="player-hero">
 

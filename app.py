@@ -1,7 +1,7 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
-from parser_tools import parse_log, generate_key
+from parser_tools import parse_log, generate_key, parse_hero_stats
 from keygen import generate_access_key
 import configparser
 from user import User
@@ -32,6 +32,12 @@ COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
            "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
            "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
            "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt", "Hero", "Team"]
+
+STAT_COLUMNS = ["Hero Damage Dealt", "Barrier Damage Dealt",
+           "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
+           "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
+           "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
+           "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt"]
 
 # Set up discord auth config
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
@@ -169,8 +175,21 @@ def get_upload():
 @app.get('/game_log/<log>')
 def log(log):
     data = parse_log(log)
+    return render_template("log.html",
+                           COLUMNS=COLUMNS,
+                           scoreboard=data[2][data[0]],
+                           player_heroes=data[1],
+                           log=log)
 
-    return render_template("log.html", COLUMNS=COLUMNS, scoreboard=data[2][data[0]], player_heroes=data[1])
+@app.get('/game_log/<log>/<player>')
+def match_player_hero_stats(log,player):
+    data = parse_log(log)
+    hero_stats = parse_hero_stats(data[2])[player]
+    return render_template("match_player_hero_stats.html",
+                           hero_stats=hero_stats,
+                           player_heroes=data[1],
+                           player=player,
+                           STATS_COLUMNS=STAT_COLUMNS)
 
 
 if __name__ == '__main__':

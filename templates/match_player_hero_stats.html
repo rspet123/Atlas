@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/main.css') }}">
+    <meta charset="UTF-8">
+    <title>Hero Stats for {{ player }}</title>
+</head>
+<body>
+<h1>{{ player }}</h1>
+{% for hero in hero_stats %}
+    {% if not hero ==""  %}
+        <div class="player-hero">
+            <object data="https://d1u1mce87gyfbn.cloudfront.net/hero/{{ hero|lower }}/hero-select-portrait.png" alt="{{ hero }}">
+                <img src="https://d1u1mce87gyfbn.cloudfront.net/hero/soldier-76/hero-select-portrait.png" alt="Fallback">
+            </object>
+            <h3 class="centered">{{ hero }}: {{ player_heroes[player][hero] }} Seconds</h3>
+
+        </div>
+        <div class = "stats-container">
+        <ul>
+        {% for stat in STATS_COLUMNS %}
+            <li>{{ stat }}: {{ hero_stats[hero][stat] }}</li>
+        {% endfor %}
+        </ul>
+        </div>
+
+
+    {% endif %}
+{% endfor %}
+</body>
+</html>

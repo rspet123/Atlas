@@ -58,9 +58,12 @@ def generate_key(size = 24):
 
 def diff_stats(players:dict,player:dict,last_tick:dict,stat:str):
     """Nice helper function for diffing stats between frames"""
-    players[player["Player"]][player["Hero"]][stat] = \
-        players[player["Player"]][player["Hero"]].get(stat, 0) + player[stat] - \
-        last_tick[player["Player"]].get(stat, 0)
+    try:
+        players[player["Player"]][player["Hero"]][stat] = \
+            players[player["Player"]][player["Hero"]].get(stat, 0) + player[stat] - \
+            last_tick[player["Player"]].get(stat, 0)
+    except TypeError:
+        print(f"incorrect type for {player['Player']} {stat}, cannot cast {player[stat]} as float")
 
 
 
@@ -74,32 +77,27 @@ data_template = {"Hero":"", 'Hero Damage Dealt': 0,
             'Ultimates Earned': 0, 'Ultimates Used': 0, 'Weapon Accuracy': 0,
             'All Damage Dealt': 0}
 d = parse_log("Log-2022-04-19-18-46-35.txt")
+
+def parse_hero_stats(stats_log):
+    players = {}
+    last_tick = {}
+    for log in stats_log:
+        for player in stats_log[log]:
+            if player["Player"] not in players:
+                players[player["Player"]] = {}
+            if player["Player"] not in last_tick:
+                last_tick[player["Player"]] = {}
+
+            if player["Hero"] not in players[player["Player"]]:
+                players[player["Player"]][player["Hero"]] = {}
+            for stat in STAT_COLUMNS:
+                #Calculate and update stats for each player and each hero
+                diff_stats(players, player, last_tick, stat)
+            last_tick[player["Player"]] = player
+    return players
+
+
 final_log = d[2][d[0]]
-players = {}
-last_tick = {}
-for log in d[2]:
-    for player in d[2][log]:
-        if player["Player"] not in players:
-            players[player["Player"]] = {}
-        if player["Player"] not in last_tick:
-            last_tick[player["Player"]] = {}
 
-        print(player['Hero Damage Dealt']-last_tick[player["Player"]].get('Hero Damage Dealt',0))
-        if player["Hero"] not in players[player["Player"]]:
-            players[player["Player"]][player["Hero"]] = {}
-        for stat in STAT_COLUMNS:
-            pass
-            #diff_stats(players, player, last_tick, stat)
-        diff_stats(players, player, last_tick, 'Healing Dealt')
-        diff_stats(players, player, last_tick, 'Hero Damage Dealt')
-        diff_stats(players, player, last_tick, 'Eliminations')
-        diff_stats(players, player, last_tick, 'Damage Taken')
-        diff_stats(players, player, last_tick, 'Damage Blocked')
-        diff_stats(players, player, last_tick, 'Damage Blocked')
-        last_tick[player["Player"]] = player
-
-
-
-
-print(players)
+print(parse_hero_stats(d[2]))
 
