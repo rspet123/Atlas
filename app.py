@@ -8,6 +8,7 @@ from user import User
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
+import turbo_flask #Use this for the queue page
 app = Flask(__name__)
 
 # Get Config Data
