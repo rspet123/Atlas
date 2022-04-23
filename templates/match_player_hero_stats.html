@@ -19,7 +19,7 @@
         <div class = "stats-container">
         <ul>
         {% for stat in STATS_COLUMNS %}
-            <li>{{ stat }}: {{ hero_stats[hero][stat] }}</li>
+            <li>{{ stat }}: {{ (hero_stats[hero][stat]/ (player_heroes[player][hero]/600)) |round(2) }} Per 10 Minutes</li>
         {% endfor %}
         </ul>
         </div>

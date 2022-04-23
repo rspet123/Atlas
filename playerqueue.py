@@ -1,3 +1,5 @@
+from db import tank_queue,support_queue,dps_queue
+
 class PlayerQueue:
     role_queue = {"tank": [], "dps": [], "support": []}
 

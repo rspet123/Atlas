@@ -119,7 +119,7 @@ def post_signup(id, name):
         key = request.form["key"]
     except Exception:
         return render_template("nokey.html")
-    if not key == generate_access_key(id):
+    if not key == generate_access_key(int(id)):
         return render_template("nokey.html")
     discord_name = name
     avatar = user.avatar_url
