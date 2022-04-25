@@ -8,6 +8,7 @@ from user import User
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
+from match import add_match
 from ow_info import MAPS,COLUMNS,STAT_COLUMNS
 import turbo_flask #Use this for the queue page
 app = Flask(__name__)
@@ -51,6 +52,7 @@ def landing():
 
 
 @app.post('/upload')
+@requires_authorization
 def post_upload():
     """Post our file to the server"""
     if 'file' not in request.files:
@@ -63,6 +65,15 @@ def post_upload():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        user = discord.fetch_user()
+        winner = request.form["teams"]
+        print(winner)
+        data = parse_log(file.filename)
+        scoreboard = data[2][data[0]]
+        add_match(file.filename,
+                  scoreboard,
+                  winner,
+                  str(user))
         return redirect(url_for('log', log=filename))
     return 'Error?!'
 
@@ -186,12 +197,15 @@ def get_upload():
 
 
 @app.get('/game_log/<log>')
+@requires_authorization
 def log(log):
     """Displays the stats from the selected log"""
+    user = discord.fetch_user()
     data = parse_log(log)
+    scoreboard = data[2][data[0]]
     return render_template("log.html",
                            COLUMNS=COLUMNS,
-                           scoreboard=data[2][data[0]],
+                           scoreboard=scoreboard,
                            player_heroes=data[1],
                            log=log)
 @app.get('/game_logs')

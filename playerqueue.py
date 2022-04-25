@@ -9,19 +9,20 @@ def add_to_queue(bnet: str, role: str):
     player = users.find_one({"bnet": bnet})
     if role.lower() == "dps":
         try:
-            dps_queue.insert_one({"_id": player["_id"], "bnet": bnet, "rank": player["ranks"]["damage"]})
+            dps_queue.insert_one({"_id": player["_id"], "bnet": bnet, "rank": player["ranks"]["damage"], "role": "dps"})
         except Exception as e:
             # Player probably already in queue
             print(f"{type(e)}:{e}")
     if role.lower() == "tank":
         try:
-            tank_queue.insert_one({"_id": player["_id"], "bnet": bnet, "rank": player["ranks"]["tank"]})
+            tank_queue.insert_one({"_id": player["_id"], "bnet": bnet, "rank": player["ranks"]["tank"], "role": "tank"})
         except Exception as e:
             # Player probably already in queue
             print(f"{type(e)}:{e}")
     if role.lower() == "support":
         try:
-            support_queue.insert_one({"_id": player["_id"], "bnet": bnet, "rank": player["ranks"]["support"]})
+            support_queue.insert_one(
+                {"_id": player["_id"], "bnet": bnet, "rank": player["ranks"]["support"], "role": "support"})
         except Exception as e:
             # Player probably already in queue
             print(f"{type(e)}:{e}")
@@ -126,14 +127,18 @@ def matchmake_2():
     return team_1, team_2
 
 
-def matchmake_3(sr_break=50, stdv_break=600, stdv_filtering=True, reverse=True):
+def matchmake_3(sr_break=100, stdv_break=600, stdv_filtering=True, reverse=True, range=200):
     if not reverse:
         print("Finding Highest SR Game")
-    team_1 = []
-    team_2 = []
-    dps_in_queue = list(dps_queue.find())
-    support_in_queue = list(support_queue.find())
-    tank_in_queue = list(tank_queue.find())
+
+    if range < 4:
+        print("Can't make a queue with this, try a range > 4")
+
+    # Ok, so now to prevent low rank players in high rank games, we only take the highest(or lowest, if reverse) X
+    dps_in_queue = sorted(list(dps_queue.find()), key=lambda d: d['rank'], reverse=reverse)[-range:]
+    support_in_queue = sorted(list(support_queue.find()), key=lambda d: d['rank'], reverse=reverse)[-range:]
+    tank_in_queue = sorted(list(tank_queue.find()), key=lambda d: d['rank'], reverse=reverse)[-range:]
+
     if len(dps_in_queue) < 4 or len(support_in_queue) < 4 or len(tank_in_queue) < 4:
         print("Not enough players in queue")
         return -1
@@ -154,15 +159,17 @@ def matchmake_3(sr_break=50, stdv_break=600, stdv_filtering=True, reverse=True):
             for i, player in enumerate(role):
                 players.append(player["bnet"])
                 player_stats.append(
-                    {"bnet": player["bnet"], "role": queue_state[player["bnet"]]["role"], "rank": player['rank']})
+                    {"bnet": player["bnet"], "role": player["role"], "rank": player['rank']})
         if len(set(players)) == 6:
             # Check if players aren't on the same team twice, for multi-role queue
-            team_list.append(
-                {"team": team, "avg": (team_avg / 6), "players": set(players), "player_stats": player_stats})
+            team_list.append({"team": team,
+                              "avg": (team_avg / 6),
+                              "players": set(players),
+                              "player_stats": player_stats})
 
     sorted_teams = sorted(team_list, key=lambda d: d['avg'], reverse=reverse)
 
-    # TODO Explain how this works
+    # TODO WIP optimization
     candidates = []
     for team_1 in sorted_teams:
         for team_2 in sorted_teams:
