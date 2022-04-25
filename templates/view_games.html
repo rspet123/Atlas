@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Games</title>
+</head>
+<body>
+{% for game in games %}
+<h1><a href={{ url_for("log",log=game) }}>{{ game| replace(".txt", "") }}</a></h1>
+{% endfor %}
+</body>
+</html>

@@ -194,6 +194,12 @@ def log(log):
                            scoreboard=data[2][data[0]],
                            player_heroes=data[1],
                            log=log)
+@app.get('/game_logs')
+def logs():
+    """Shows all games"""
+    uploaded_matches = os.listdir(LOG_FOLDER)
+    print(uploaded_matches)
+    return render_template("view_games.html",games = uploaded_matches)
 
 @app.get('/game_log/<log>/<player>')
 def match_player_hero_stats(log,player):
