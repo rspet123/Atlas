@@ -1,5 +1,5 @@
 import random
-
+import time
 from db import tank_queue, support_queue, dps_queue, users
 import statistics
 from itertools import combinations, product
@@ -34,11 +34,11 @@ def get_players_in_queue():
     support_in_queue = support_queue.find()
     tank_in_queue = tank_queue.find()
     for dps in dps_queue.find():
-        queue_state[dps["bnet"]]=({"bnet": dps["bnet"], "role": "dps", "rank": dps["rank"]})
+        queue_state[dps["bnet"]] = ({"bnet": dps["bnet"], "role": "dps", "rank": dps["rank"]})
     for support in support_queue.find():
-        queue_state[support["bnet"]]=({"bnet": support["bnet"], "role": "support", "rank": support["rank"]})
+        queue_state[support["bnet"]] = ({"bnet": support["bnet"], "role": "support", "rank": support["rank"]})
     for tank in tank_queue.find():
-        queue_state[tank["bnet"]]=({"bnet": tank["bnet"], "role": "tank", "rank": tank["rank"]})
+        queue_state[tank["bnet"]] = ({"bnet": tank["bnet"], "role": "tank", "rank": tank["rank"]})
     return queue_state
 
 
@@ -126,9 +126,7 @@ def matchmake_2():
     return team_1, team_2
 
 
-def matchmake_3():
-    sr_break = 50
-    reverse = False
+def matchmake_3(sr_break=50, stdv_break=600, stdv_filtering=True, reverse=True):
     if not reverse:
         print("Finding Highest SR Game")
     team_1 = []
@@ -153,29 +151,42 @@ def matchmake_3():
         player_stats = []
         for role in team:
             team_avg += sum(player['rank'] for player in role)
-            for i,player in enumerate(role):
+            for i, player in enumerate(role):
                 players.append(player["bnet"])
-                player_stats.append({"bnet":player["bnet"],"role":queue_state[player["bnet"]]["role"],"rank":player['rank']})
-        team_list.append({"team": team, "avg": (team_avg / 6), "players":set(players),"player_stats":player_stats})
-    sorted_teams = sorted(team_list, key=lambda d: d['avg'], reverse=True)
-    #INCOMING DOUBLE FOR LOOP SORRY
+                player_stats.append(
+                    {"bnet": player["bnet"], "role": queue_state[player["bnet"]]["role"], "rank": player['rank']})
+        if len(set(players)) == 6:
+            # Check if players aren't on the same team twice, for multi-role queue
+            team_list.append(
+                {"team": team, "avg": (team_avg / 6), "players": set(players), "player_stats": player_stats})
 
+    sorted_teams = sorted(team_list, key=lambda d: d['avg'], reverse=reverse)
+
+    # TODO Explain how this works
     candidates = []
     for team_1 in sorted_teams:
         for team_2 in sorted_teams:
             if team_1["players"].intersection(team_2["players"]) == set():
                 if abs(team_1["avg"] - team_2["avg"]) < sr_break:
-                    candidates.append({"team_1":team_1["player_stats"],"team_2":team_2["player_stats"],"diff":abs(team_1["avg"] - team_2["avg"])})
+                    candidates.append({"team_1": team_1["player_stats"], "team_2": team_2["player_stats"],
+                                       "diff": abs(team_1["avg"] - team_2["avg"])})
                     break
                 break
-    min_diff = min(candidates, key=lambda x: x['diff'])
+    filtered_teams = []
+    if stdv_filtering:
+        for candidate in candidates:
+            stdv_1 = statistics.pstdev(player["rank"] for player in candidate["team_1"])
+            stdv_2 = statistics.pstdev(player["rank"] for player in candidate["team_2"])
+            if stdv_2 < stdv_break and stdv_1 < stdv_break:
+                filtered_teams.append(candidate)
+    else:
+        filtered_teams = candidates
+    try:
+        min_diff = min(filtered_teams, key=lambda x: x['diff'])
+    except ValueError:
+        print("No teams found for selected parameters")
+        min_diff = min(candidates, key=lambda x: x['diff'])
     return min_diff["team_1"], min_diff["team_2"]
-
-
-
-
-
-
 
 
 def empty_queue():
@@ -196,23 +207,24 @@ class PlayerQueue:
 
 
 # Testing, making fake users
-num_users = 25
+num_users = 30
 
 for i in range(num_users):
-   try:
-       users.insert_one({"_id":f"player{i}","bnet":f"player{i}","ranks":{"tank":random.randint(1500,5000),
-                                                                         "damage":random.randint(1500,5000),
-                                                                         "support":random.randint(1500,5000)}})
-   except Exception as e:
-       print(type(e))
+    try:
+        users.insert_one({"_id": f"player{i}", "bnet": f"player{i}", "ranks": {"tank": random.randint(1500, 5000),
+                                                                               "damage": random.randint(1500, 5000),
+                                                                               "support": random.randint(1500, 5000)}})
+    except Exception as e:
+        print(type(e))
+empty_queue()
 for i in range(num_users):
-   userbnet = users.find_one({"_id":f"player{i}"})["bnet"]
-   if i%3 == 0:
-       add_to_queue(userbnet,"tank")
-   if i%3 == 1:
-       add_to_queue(userbnet,"dps")
-   if i%3 == 2:
-       add_to_queue(userbnet,"support")
+    userbnet = users.find_one({"_id": f"player{i}"})["bnet"]
+    if i % 3 == 0:
+        add_to_queue(userbnet, "tank")
+    if i % 3 == 1:
+        add_to_queue(userbnet, "dps")
+    if i % 3 == 2:
+        add_to_queue(userbnet, "support")
 
 teams = matchmake()
 team_1 = teams[0]
@@ -240,7 +252,10 @@ print(f"Team 2 SR STDV:{statistics.pstdev(player['rank'] for player in team_2)}"
 for player in team_2:
     print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
 print("-------------------------------")
+start = time.time()
 teams = matchmake_3()
+end = time.time()
+print(f"Time:{end - start}")
 team_1 = teams[0]
 team_2 = teams[1]
 print("Matchmaker 3")
@@ -253,5 +268,6 @@ print(f"Team 2 SR STDV:{statistics.pstdev(player['rank'] for player in team_2)}"
 for player in team_2:
     print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
 
-a = {1,2,3}
-b = {4,5,6,1}
+a = {1, 2, 3}
+b = {4, 5, 6, 1}
+c = {1, 1, 1, 1}
