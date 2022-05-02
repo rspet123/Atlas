@@ -18,7 +18,7 @@ config.read("config.ini")
 CLIENT_ID = config.get("DISCORD", "CLIENT_ID")
 CLIENT_SECRET = config.get("DISCORD", "CLIENT_SECRET")
 CALLBACK = config.get("DISCORD", "CALLBACK")
-
+#https://stackoverflow.com/questions/54892779/how-to-serve-a-local-app-using-waitress-and-nginx
 #Generate Flask Secret key for auth
 key = generate_key()
 app.secret_key = key
