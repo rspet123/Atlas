@@ -1,5 +1,5 @@
 import db
-from openskill import Rating, rate
+from openskill import Rating, rate, predict_win
 import random
 
 
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     team_1 = []
     team_2 = []
 
-    for i in range(120, 130):
+    for i in range(0, 30):
         if i % 2 == 0:
             team_1.append(User(f"player{i}", f"player{i}",
                                ["tank"], f"player{i}",
@@ -109,6 +109,7 @@ print(team_2)
 team_2_rank = [player.get_rating("damage") for player in team_2]
 team_1_rank = [player.get_rating("tank") for player in team_1]
 print(rate([team_2_rank, team_1_rank]))
+print(predict_win([team_1_rank,team_2_rank]))
 team_2_new_rank, team_1_new_rank = rate([team_2_rank, team_1_rank])
 
 for tuple in zip(team_2_new_rank,team_2):
