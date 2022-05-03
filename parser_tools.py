@@ -13,6 +13,19 @@ STAT_COLUMNS = ["Hero Damage Dealt", "Barrier Damage Dealt",
 
 
 def parse_log(log, log_folder ="log_folder", columns=None):
+    """
+    It takes a log file and returns a tuple containing the final player scoreboard [0] and player hero time [1]
+
+    The function takes in a log file, and a list of columns. The columns are the stats that are recorded in the log file.
+    The function then reads the log file line by line, and splits the line into a timestamp and a list of stats. The stats
+    are then zipped with the columns, and put into a dictionary. The dictionary is then appended to a list of stats for that
+    timestamp. The list of stats for each timestamp is then put into a dictionary, with the timestamp as the key
+
+    :param log: the name of the log file
+    :param log_folder: The folder where the logs are stored, defaults to log_folder (optional)
+    :param columns: The columns of the log file
+    :return: A tuple containing the final player scoreboard [0] and player hero time [1]
+    """
     """Returns a tuple containing the final player scoreboard [0] and player hero time [1]"""
     if columns is None:
         columns = COLUMNS
@@ -50,6 +63,12 @@ def parse_log(log, log_folder ="log_folder", columns=None):
     return(time_stamp,player_heroes,log_stats)
 
 def generate_key(size = 24):
+    """
+    It generates a random string of characters between 65 and 122, and returns it as a byte string
+
+    :param size: The size of the key to generate. Defaults to 24, defaults to 24 (optional)
+    :return: A string of random characters
+    """
     #48 - 122
     key = ""
     for _ in range(size):
@@ -57,6 +76,19 @@ def generate_key(size = 24):
     return bytes(key,"ascii")
 
 def diff_stats(players:dict,player:dict,last_tick:dict,stat:str):
+    """
+    > If the player exists in the players dictionary, and the hero exists in the player's dictionary, and the stat exists in
+    the hero's dictionary, then add the stat to the hero's dictionary
+
+    :param players: dict
+    :type players: dict
+    :param player: the player object
+    :type player: dict
+    :param last_tick: the last tick of data we've seen
+    :type last_tick: dict
+    :param stat: the stat we're looking at
+    :type stat: str
+    """
     """Nice helper function for diffing stats between frames"""
     try:
         players[player["Player"]][player["Hero"]][stat] = \
@@ -76,9 +108,14 @@ data_template = {"Hero":"", 'Hero Damage Dealt': 0,
             'Objective Kills': 0, 'Objective Assists': 0.0, 'Solo Kills': 0,
             'Ultimates Earned': 0, 'Ultimates Used': 0, 'Weapon Accuracy': 0,
             'All Damage Dealt': 0}
-d = parse_log("Log-2022-04-19-18-46-35.txt")
 
 def parse_hero_stats(stats_log):
+    """
+    For each player, for each hero, for each stat, calculate the difference between the current stat and the last stat
+
+    :param stats_log: The log of stats for each player at each tick
+    :return: A dictionary of dictionaries of dictionaries.
+    """
     players = {}
     last_tick = {}
     for log in stats_log:
@@ -95,9 +132,4 @@ def parse_hero_stats(stats_log):
                 diff_stats(players, player, last_tick, stat)
             last_tick[player["Player"]] = player
     return players
-
-
-final_log = d[2][d[0]]
-
-print(parse_hero_stats(d[2]))
 

@@ -6,6 +6,14 @@ from itertools import combinations, product
 
 
 def add_to_queue(bnet: str, role: str):
+    """
+    It takes a battlenet tag and a role, and adds the player to the queue for that role
+
+    :param bnet: The player's battletag
+    :type bnet: str
+    :param role: str
+    :type role: str
+    """
     player = users.find_one({"bnet": bnet})
     if role.lower() == "dps":
         try:
@@ -29,6 +37,10 @@ def add_to_queue(bnet: str, role: str):
 
 
 def get_players_in_queue():
+    """
+    It returns a dictionary of players in the queue, with their battletag as the key and their role and rank as the value
+    :return: A dictionary of players in the queue.
+    """
     """Returns a list of players in the format Player, Role"""
     queue_state = {}
     dps_in_queue = dps_queue.find()
@@ -44,6 +56,10 @@ def get_players_in_queue():
 
 
 def matchmake():
+    """
+    It takes the top 4 players from each role, and puts them into two teams
+    :return: A tuple of two lists. Each list contains 4 dictionaries.
+    """
     reverse = False
     if not reverse:
         print("Finding Highest SR Game")
@@ -85,8 +101,14 @@ def matchmake():
     return team_1, team_2
 
 
-def matchmake_2():
-    reverse = False
+def matchmake_2(reverse = False):
+    """
+    It takes the last 4 players in each role queue, sorts them by rank, and splits them down the middle
+
+    :param reverse: If True, the matchmaker will find the lowest SR game. If False, the matchmaker will find the highest SR
+    game, defaults to False (optional)
+    :return: A tuple of two lists. Each list contains 6 dictionaries.
+    """
     if not reverse:
         print("Finding Highest SR Game")
     team_1 = []
@@ -128,6 +150,19 @@ def matchmake_2():
 
 
 def matchmake_3(sr_break=100, stdv_break=600, stdv_filtering=True, reverse=True, range=200):
+    """
+    It takes all possible combinations of 12 players in the queue, and then filters them by SR difference, and then by standard
+    deviation
+
+    :param sr_break: The maximum difference in SR between the two teams, defaults to 100 (optional)
+    :param stdv_break: The standard deviation of the team's SR. If it's too high, the team is probably not balanced,
+    defaults to 600 (optional)
+    :param stdv_filtering: If True, it will filter out teams with a high standard deviation, defaults to True (optional)
+    :param reverse: If you want to find the highest SR game, set this to True. If you want to find the lowest SR game, set
+    this to False, defaults to True (optional)
+    :param range: How many players to take from the top of the queue, defaults to 200 (optional)
+    :return: A tuple of two lists of dictionaries. Each dictionary contains the battletag, role, and rank of a player.
+    """
     if not reverse:
         print("Finding Highest SR Game")
 
@@ -196,6 +231,19 @@ def matchmake_3(sr_break=100, stdv_break=600, stdv_filtering=True, reverse=True,
     return min_diff["team_1"], min_diff["team_2"]
 
 def matchmake_3_ow2(sr_break=100, stdv_break=600, stdv_filtering=True, reverse=True, range=200):
+    """
+    It takes all possible combinations of 10 players in the queue, and then filters them by SR difference, and then by standard
+    deviation
+
+    :param sr_break: The maximum difference in SR between the two teams, defaults to 100 (optional)
+    :param stdv_break: The standard deviation of the team's SRs. If it's too high, the team is not considered, defaults to
+    600 (optional)
+    :param stdv_filtering: If True, it will filter out teams with a high standard deviation, defaults to True (optional)
+    :param reverse: If you want to find the highest SR game, set this to True. If you want to find the lowest SR game, set
+    this to False, defaults to True (optional)
+    :param range: How many players to take from the queue, defaults to 200 (optional)
+    :return: A tuple of two lists of dictionaries. Each dictionary contains the battletag, role, and rank of a player.
+    """
     if not reverse:
         print("Finding Highest SR Game")
 
@@ -265,6 +313,9 @@ def matchmake_3_ow2(sr_break=100, stdv_break=600, stdv_filtering=True, reverse=T
 
 
 def empty_queue():
+    """
+    It deletes all the documents in the three queues
+    """
     tank_queue.delete_many({})
     dps_queue.delete_many({})
     support_queue.delete_many({})
@@ -277,6 +328,14 @@ class PlayerQueue:
         self.role_queue = {"tank": [], "dps": [], "support": []}
 
     def queue_up(self, role: str, player: str):
+        """
+        Adds a player to the queue in the chosen role
+
+        :param role: str - The role you want to queue up for
+        :type role: str
+        :param player: The player's name
+        :type player: str
+        """
         """Adds a player to the queue in the chosen role"""
         self.role_queue[role].append(player)
 

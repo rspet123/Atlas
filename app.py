@@ -39,6 +39,12 @@ discord = DiscordOAuth2Session(app)
 
 
 def allowed_file(filename):
+    """
+    If the file has an extension and the extension is in our list of allowed extensions, then return True
+
+    :param filename: The name of the file that was uploaded
+    :return: a boolean value.
+    """
     """Checks if our file is of the correct type"""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -46,6 +52,10 @@ def allowed_file(filename):
 
 @app.route('/')
 def landing():
+    """
+    It redirects the user to the post_upload page
+    :return: A redirect to the post_upload page.
+    """
     """Landing page"""
     return redirect(url_for("post_upload"))
 
@@ -53,6 +63,10 @@ def landing():
 @app.post('/upload')
 @requires_authorization
 def post_upload():
+    """
+    It takes the file that was uploaded, parses it, and adds it to the database
+    :return: the string 'Error?!'
+    """
     """Post our file to the server"""
     if 'file' not in request.files:
         flash('No file part')
@@ -79,12 +93,20 @@ def post_upload():
 
 @app.route("/login")
 def login():
+    """
+    > Redirect to discord auth
+    :return: A redirect to the discord auth page.
+    """
     """Redirect to discord auth"""
     return discord.create_session()
 
 
 @app.route("/auth")
 def callback():
+    """
+    It redirects the user to the current user page
+    :return: The redirect function is being returned.
+    """
     """Callback for discord auth"""
     discord.callback()
     return (redirect(url_for("curr_user")))
@@ -92,6 +114,12 @@ def callback():
 
 @app.errorhandler(Unauthorized)
 def redirect_unauthorized(e):
+    """
+    If the user is not logged in, redirect them to the login page
+
+    :param e: The exception that was raised
+    :return: A redirect to the login page.
+    """
     """Errror handler for unauthed user, redirects to login"""
     return redirect(url_for("login"))
 
@@ -99,6 +127,10 @@ def redirect_unauthorized(e):
 @app.route("/me")
 @requires_authorization
 def curr_user():
+    """
+    If the user is in our database, we render the user page. If not, we redirect them to the signup page
+    :return: The user object
+    """
     """User landing page, after logging in"""
     user = discord.fetch_user()
     print(user)
@@ -113,6 +145,10 @@ def curr_user():
 @app.get("/signup")
 @requires_authorization
 def signup():
+    """
+    > This function renders the signup page, which links a user's discord account to their battle.net account
+    :return: The user's discord name and id
+    """
     """Signup page, links bnet to discord"""
     user = discord.fetch_user()
     return render_template("signup.html", discord_name=str(user), id=user.id)
@@ -121,6 +157,13 @@ def signup():
 @app.post("/signup/<id>/<name>")
 @requires_authorization
 def post_signup(id, name):
+    """
+    We get the user's information from the form, and then we get their ranks from the API.
+
+    :param id: The discord user id
+    :param name: The name of the player
+    :return: A dictionary of the players ranks for each role
+    """
     """post endpoint for signup data"""
     user = discord.fetch_user()
     # Through requests we get user information
@@ -191,6 +234,10 @@ def post_signup(id, name):
 
 @app.get('/upload')
 def get_upload():
+    """
+    It returns the HTML template for the upload page
+    :return: The upload_log.html file is being returned.
+    """
     """Route for uploading logs to server"""
     return render_template("upload_log.html")
 
@@ -198,6 +245,12 @@ def get_upload():
 @app.get('/game_log/<log>')
 @requires_authorization
 def log(log):
+    """
+    It takes a log file, parses it, and returns a rendered template with the parsed data
+
+    :param log: The name of the log file
+    :return: The log.html template is being returned.
+    """
     """Displays the stats from the selected log"""
     user = discord.fetch_user()
     data = parse_log(log)
@@ -209,6 +262,10 @@ def log(log):
                            log=log)
 @app.get('/game_logs')
 def logs():
+    """
+    It lists all the files in the LOG_FOLDER directory and passes them to the view_games.html template
+    :return: The list of all the games that have been uploaded.
+    """
     """Shows all games"""
     uploaded_matches = os.listdir(LOG_FOLDER)
     print(uploaded_matches)
@@ -216,6 +273,13 @@ def logs():
 
 @app.get('/game_log/<log>/<player>')
 def match_player_hero_stats(log,player):
+    """
+    It takes a log file and a player name, and returns a rendered template with the player's hero stats
+
+    :param log: the log file to be parsed
+    :param player: The player's name
+    :return: A dictionary of the hero stats for the given player in the given match.
+    """
     """Displays Hero stats for given player in given match"""
     data = parse_log(log)
     hero_stats = parse_hero_stats(data[2])[player]

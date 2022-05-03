@@ -14,8 +14,26 @@ class User:
     role_ranks = {}
     role_ratings = {}
 
-    def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, id: str, name: str,
-                 role_ranks: dict, update_db=True):
+    def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, id: str, name: str,role_ranks: dict, update_db=True):
+        """
+        creates our new player object, as well as turning SR into our rating system
+
+        :param discord_name: The user's discord name
+        :type discord_name: str
+        :param bnet_name: The battletag of the user
+        :type bnet_name: str
+        :param preferred_roles: A list of roles that the user prefers to play
+        :type preferred_roles: list
+        :param avatar: The URL of the user's avatar
+        :type avatar: str
+        :param id: The discord id of the user
+        :type id: str
+        :param name: The name of the user
+        :type name: str
+        :param role_ranks: a dictionary of the user's role ranks
+        :type role_ranks: dict
+        :param update_db: Whether or not to update the database with the new user, defaults to True (optional)
+        """
         self.discord_name = discord_name
         self.bnet_name = bnet_name
         self.preferred_roles = preferred_roles
@@ -44,11 +62,20 @@ class User:
                                  "ratings": self.role_ratings})
 
     def __repr__(self):
+        """
+        This function returns a string that contains the name, bnet name, and role ratings of the player
+        :return: The name, bnet name, and role ratings for the player.
+        """
         return f"Name: {self.name}, bnet: {self.bnet_name}" \
                f" DPS: {self.role_ratings['damage']}" \
                f" Support: {self.role_ratings['support']}" \
                f" Tank: {self.role_ratings['tank']}"
+
     def as_json(self):
+        """
+        It returns a dictionary of the user's information for database use
+        :return: A dictionary with the keys: _id, bnet, roles, info, avatar, id, name, ranks, ratings
+        """
         return {"_id": self.discord_name,
          "bnet": self.bnet_name,
          "roles": self.preferred_roles,
@@ -60,21 +87,47 @@ class User:
          "ratings": self.role_ratings}
 
     def update_rating(self, role, new_rating: Rating):
-        """If updating ratings from the rate keywird"""
+        """
+        It updates the user's rating for a given role, and then updates the database with the new rating
+
+        :param role: the role you want to update
+        :param new_rating: Rating = (mu, sigma)
+        :type new_rating: Rating
+        """
         self.role_ratings[role]["mu"] = new_rating[0]
         self.role_ratings[role]["sigma"] = new_rating[1]
         db.users.update_one({"bnet": self.bnet_name},update={"$set":self.as_json()})
 
     def get_rating(self, role):
+        """
+        It returns a player's openskill rating object
+
+        :param role: The role you want to get the rating for
+        :return: A Rating object with the mu and sigma values of the role.
+        """
         return Rating(self.role_ratings[role]["mu"],self.role_ratings[role]["sigma"])
 
     @staticmethod
     def get_user_by_bnet(bnet: str):
+        """
+        > This function takes a bnet and returns a user
+
+        :param bnet: The battlenet ID of the user
+        :type bnet: str
+        :return: A user object
+        """
         user = db.users.find_one({"bnet": bnet})
         return user
 
     @staticmethod
     def get_user_by_discord(discord: str):
+        """
+        `get_user_by_discord` takes a discord ID and returns the user object from the database
+
+        :param discord: The discord ID of the user
+        :type discord: str
+        :return: A user object
+        """
         user = db.users.find_one({"_id": discord})
         return user
 
