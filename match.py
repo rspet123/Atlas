@@ -11,7 +11,6 @@ def hash_match(filename, buffer=1024):
     :param buffer: The size of the chunk of data to read from the file, defaults to 1024 (optional)
     :return: The hash of the file
     """
-    """Hashes the log file"""
     h = hashlib.sha1()
     with open(f"log_folder/{filename}", 'rb') as file:
         chunk = 0

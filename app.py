@@ -23,13 +23,13 @@ CALLBACK = config.get("DISCORD", "CALLBACK")
 key = generate_key()
 app.secret_key = key
 
-# Set up discord auth config
+# Setting up the config for the discord auth.
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
 app.config["DISCORD_CLIENT_ID"] = CLIENT_ID
 app.config["DISCORD_CLIENT_SECRET"] = CLIENT_SECRET
 app.config["DISCORD_REDIRECT_URI"] = CALLBACK
 
-# set up file storage config
+# Setting up the config for the file storage.
 LOG_FOLDER = "log_folder"
 app.config['UPLOAD_FOLDER'] = LOG_FOLDER
 ALLOWED_EXTENSIONS = {'txt'}
