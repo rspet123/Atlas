@@ -152,24 +152,24 @@ if __name__ == '__main__':
                                {"tank": random.randint(1500, 5000),
                                 "support": random.randint(1500, 5000),
                                 "damage": random.randint(1500, 5000)}, True))
-print("Team 1")
-for player in team_1:
-    print(f"{player.name} - {player.role_ratings['damage']}")
-print("Team 2")
-for player in team_2:
-    print(f"{player.name} - {player.role_ratings['damage']}")
-print(team_2)
-team_2_rank = [player.get_rating("damage") for player in team_2]
-team_1_rank = [player.get_rating("tank") for player in team_1]
-print(rate([team_2_rank, team_1_rank]))
-print(predict_win([team_1_rank,team_2_rank]))
-team_2_new_rank, team_1_new_rank = rate([team_2_rank, team_1_rank])
+    print("Team 1")
+    for player in team_1:
+        print(f"{player.name} - {player.role_ratings['damage']}")
+    print("Team 2")
+    for player in team_2:
+        print(f"{player.name} - {player.role_ratings['damage']}")
+    print(team_2)
+    team_2_rank = [player.get_rating("damage") for player in team_2]
+    team_1_rank = [player.get_rating("tank") for player in team_1]
+    print(rate([team_2_rank, team_1_rank]))
+    print(predict_win([team_1_rank,team_2_rank]))
+    team_2_new_rank, team_1_new_rank = rate([team_2_rank, team_1_rank])
 
-for tuple in zip(team_2_new_rank,team_2):
-    tuple[1].update_rating("damage",tuple[0])
-    print(tuple[1])
+    for tuple in zip(team_2_new_rank,team_2):
+        tuple[1].update_rating("damage",tuple[0])
+        print(tuple[1])
 
-for tuple in zip(team_1_new_rank,team_1):
-    tuple[1].update_rating("damage",tuple[0])
-    print(tuple[1])
+    for tuple in zip(team_1_new_rank,team_1):
+        tuple[1].update_rating("damage",tuple[0])
+        print(tuple[1])
 
