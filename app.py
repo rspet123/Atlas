@@ -9,7 +9,9 @@ from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthor
 import requests
 import json
 from match import add_match
-from ow_info import MAPS,COLUMNS,STAT_COLUMNS
+from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2
+from ow_info import MAPS, COLUMNS, STAT_COLUMNS
+
 app = Flask(__name__)
 
 # Get Config Data
@@ -18,8 +20,8 @@ config.read("config.ini")
 CLIENT_ID = config.get("DISCORD", "CLIENT_ID")
 CLIENT_SECRET = config.get("DISCORD", "CLIENT_SECRET")
 CALLBACK = config.get("DISCORD", "CALLBACK")
-#https://stackoverflow.com/questions/54892779/how-to-serve-a-local-app-using-waitress-and-nginx
-#Generate Flask Secret key for auth
+# https://stackoverflow.com/questions/54892779/how-to-serve-a-local-app-using-waitress-and-nginx
+# Generate Flask Secret key for auth
 key = generate_key()
 app.secret_key = key
 
@@ -69,12 +71,10 @@ def post_upload():
     """
     """Post our file to the server"""
     if 'file' not in request.files:
-        flash('No file part')
-        return redirect(request.url)
+        return "", 400
     file = request.files['file']
     if file.filename == '':
-        flash('No selected file')
-        return redirect(request.url)
+        return "", 400
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -87,8 +87,8 @@ def post_upload():
                   scoreboard,
                   winner,
                   str(user))
-        return redirect(url_for('log', log=filename))
-    return 'Error?!'
+        return "", 201
+    return "", 415
 
 
 @app.route("/login")
@@ -109,7 +109,8 @@ def callback():
     """
     """Callback for discord auth"""
     discord.callback()
-    return (redirect(url_for("curr_user")))
+    user = discord.fetch_user()
+    return user.to_json()
 
 
 @app.errorhandler(Unauthorized)
@@ -138,8 +139,8 @@ def curr_user():
     print(disc_user)
     if disc_user is None:
         # If the user isnt in our database, we make them signup
-        return redirect(url_for("signup"))
-    return render_template("user.html", user=disc_user)
+        return "", 403
+    return disc_user
 
 
 @app.get("/signup")
@@ -171,47 +172,50 @@ def post_signup(id, name):
     try:
         key = request.form["key"]
     except Exception:
-        return render_template("nokey.html")
+        # No key
+        return "", 401
     if not key == generate_access_key(int(id)):
-        return render_template("nokey.html")
+        # No key
+        return "", 401
     discord_name = name
     avatar = user.avatar_url
     roles = []
     try:
         request.form["tank"]
         roles.append((
-                     "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Tank_icon.svg/228px-Tank_icon.svg.png?20190921150350",
-                     "TANK"))
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Tank_icon.svg/228px-Tank_icon.svg.png?20190921150350",
+            "TANK"))
     except Exception:
         # This is rly bad code lol
         pass
     try:
         request.form["dps"]
         roles.append((
-                     "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Damage_icon.svg/1200px-Damage_icon.svg.png",
-                     "DPS"))
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Damage_icon.svg/1200px-Damage_icon.svg.png",
+            "DPS"))
     except Exception:
         # This is rly bad code lol
         pass
     try:
         request.form["support"]
         roles.append((
-                     "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Support_icon.svg/1200px-Support_icon.svg.png",
-                     "SUPPORT"))
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Support_icon.svg/1200px-Support_icon.svg.png",
+            "SUPPORT"))
     except Exception:
         # This is rly bad code lol
         pass
 
-    #We now get the players ranks
+    # We now get the players ranks
     try:
         role_ranks = {}
-        ratings = json.loads(requests.get(f"https://ovrstat.com/stats/pc/{str(bnet).replace('#','-')}").text)["ratings"]
+        ratings = json.loads(requests.get(f"https://ovrstat.com/stats/pc/{str(bnet).replace('#', '-')}").text)[
+            "ratings"]
         for rating in ratings:
             print(f"Role {rating['role']}: {rating['level']}")
             role_ranks[rating["role"]] = rating['level']
     except TypeError:
         # Handle the NoneType error from iterating an empty element, ie the player hasn't placed
-        print(f"Type Error {str(bnet).replace('#','-')}")
+        print(f"Type Error {str(bnet).replace('#', '-')}")
         role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
     except Exception:
         # Handle any other error, this bnet is busted probably
@@ -219,17 +223,16 @@ def post_signup(id, name):
         print(f"Other Error {str(bnet).replace('#', '-')}")
         # TODO
         role_ranks = {'tank': 0, 'damage': 0, 'support': 0}
-
-
-
-
-
     print(roles)
     user = discord.fetch_user()
     # Placeholder new user object for now
     # As the user class automatically stores the user in the database
-    new_user = User(discord_name, bnet, roles, avatar, id, user.name,role_ranks)
-    return (redirect(url_for("curr_user")))
+    try:
+        new_user = User(discord_name, bnet, roles, avatar, id, user.name, role_ranks)
+    except Exception as e:
+        print(e)
+        return "", 500
+    return "", 201
 
 
 @app.get('/upload')
@@ -255,11 +258,10 @@ def log(log):
     user = discord.fetch_user()
     data = parse_log(log)
     scoreboard = data[2][data[0]]
-    return render_template("log.html",
-                           COLUMNS=COLUMNS,
-                           scoreboard=scoreboard,
-                           player_heroes=data[1],
-                           log=log)
+    out = {"scoreboard": scoreboard, "player_heroes": data[1], "log": log}
+    return out
+
+
 @app.get('/game_logs')
 def logs():
     """
@@ -269,10 +271,12 @@ def logs():
     """Shows all games"""
     uploaded_matches = os.listdir(LOG_FOLDER)
     print(uploaded_matches)
-    return render_template("view_games.html",games = uploaded_matches)
+    return {"matches":uploaded_matches}
+
 
 @app.get('/game_log/<log>/<player>')
-def match_player_hero_stats(log,player):
+@requires_authorization
+def match_player_hero_stats(log, player):
     """
     It takes a log file and a player name, and returns a rendered template with the player's hero stats
 
@@ -283,11 +287,66 @@ def match_player_hero_stats(log,player):
     """Displays Hero stats for given player in given match"""
     data = parse_log(log)
     hero_stats = parse_hero_stats(data[2])[player]
-    return render_template("match_player_hero_stats.html",
-                           hero_stats=hero_stats,
-                           player_heroes=data[1],
-                           player=player,
-                           STATS_COLUMNS=STAT_COLUMNS)
+    out = {"hero_stats": hero_stats, "player_heroes": data[1], "player": player}
+    return out
+
+
+@app.post('/queue_ow1/<role>')
+@requires_authorization
+def queue_player_ow1(role: str):
+    """
+    It takes a discord user id, and a role, and adds them to the queue. If the queue is full, it starts a match
+
+    :param role: str
+    :type role: str
+    :return: The return is a tuple of two values. The first value is the response body, and the second value is the status
+    code.
+    """
+    try:
+        user_to_queue = discord.fetch_user()
+        queue_state = get_players_in_queue()
+        user_bnet = User.get_user_by_discord(str(user_to_queue))["bnet"]
+        add_to_queue(user_bnet, role)
+        if can_start:
+            # TODO websocket stuff
+            # start queue
+            team_1, team_2 = matchmake_3()
+            return {"team_1":team_1,"team_2":team_2},200
+        return {"players_in_queue":get_players_in_queue()}
+
+    except Exception as e:
+        print(e)
+        return "",500
+
+
+
+@app.post('/queue_ow2/<role>')
+@requires_authorization
+def queue_player_ow2(role: str):
+    """
+    It queues a player for a role in Overwatch 2.
+
+    :param role: str
+    :type role: str
+    :return: The return is a tuple of two values. The first value is the response body, and the second value is the status
+    code.
+    """
+    try:
+        user_to_queue = discord.fetch_user()
+        queue_state = get_players_in_queue()
+        user_bnet = User.get_user_by_discord(str(user_to_queue))["bnet"]
+        add_to_queue(user_bnet, role)
+        if can_start_ow2:
+            # TODO websocket stuff
+            # start queue
+            team_1, team_2 = matchmake_3_ow2()
+            return {"team_1": team_1, "team_2": team_2}, 200
+        return {"players_in_queue": get_players_in_queue()}
+
+    except Exception as e:
+        print(e)
+        return "", 500
+
 
 
 if __name__ == '__main__':

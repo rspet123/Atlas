@@ -54,6 +54,21 @@ def get_players_in_queue():
         queue_state[tank["bnet"]] = ({"bnet": tank["bnet"], "role": "tank", "rank": tank["rank"]})
     return queue_state
 
+def can_start():
+    """
+    If there are at least 4 players in each queue, return True
+    :return: A boolean value
+    """
+    return len(dps_queue.find()) >= 4 & len(support_queue.find()) >= 4 & len(tank_queue.find()) >= 4
+
+def can_start_ow2():
+    """
+    If there are at least 4 DPS, 4 Support, and 2 Tank players in the queue, then return True
+    :return: A boolean value
+    """
+    return len(dps_queue.find()) >= 4 & len(support_queue.find()) >= 4 & len(tank_queue.find()) >= 2
+
+
 
 def matchmake():
     """

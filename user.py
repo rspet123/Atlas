@@ -71,6 +71,13 @@ class User:
                f" Support: {self.role_ratings['support']}" \
                f" Tank: {self.role_ratings['tank']}"
 
+    def __hash__(self):
+        """
+        The hash function is used to return a unique integer for each unique object
+        :return: The hash of the name attribute of the object.
+        """
+        return hash(self.name)
+
     def as_json(self):
         """
         It returns a dictionary of the user's information for database use
