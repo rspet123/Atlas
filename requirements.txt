@@ -4,3 +4,4 @@ Flask-Discord == 0.1.68
 dnspython == 2.2.1
 Turbo-Flask == 0.8.0
 openskill == 2.2.0
+flask-cors == 3.0.10
