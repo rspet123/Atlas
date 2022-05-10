@@ -152,17 +152,31 @@ def get_user_by_bnet(bnet: str):
     this_user = db.users.find_one({"bnet": bnet})
     return create_user_from_json(this_user)
 
+def get_user_by_id(id: int):
+    """
+    > This function takes a bnet and returns a user
+
+    :param bnet: The discord ID of the user
+    :type bnet: str
+    :return: A user object
+    """
+    this_user = db.users.find_one({"id": id})
+    if this_user is None:
+        return None
+    return create_user_from_json(this_user)
+
 
 def get_user_by_discord(discord: str):
     """
-    `get_user_by_discord` takes a discord ID and returns the user object from the database
+    `get_user_by_discord` takes a discord name and returns the user object from the database
 
-    :param discord: The discord ID of the user
+    :param discord: The discord name of the user
     :type discord: str
     :return: A user object
     """
     this_user = db.users.find_one({"_id": discord})
-    print(this_user)
+    if this_user is None:
+        return None
     return create_user_from_json(this_user)
 
 
@@ -177,6 +191,7 @@ def get_all_users():
 
 # Testing
 if __name__ == '__main__':
+    print(get_user_by_id(696969696))
     pass
     # db.users.delete_many({})
     # team_1 = []

@@ -18,7 +18,7 @@ from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 REDIRECT_TO = "http://localhost:3000/login"
 
 app = Flask(__name__)
-CORS(app)
+CORS(app,supports_credentials = True,origins = ["http://localhost:3000"])
 # Get Config Data
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -48,7 +48,6 @@ discord = DiscordOAuth2Session(app)
 def allowed_file(filename):
     """
     If the file has an extension and the extension is in our list of allowed extensions, then return True
-
     :param filename: The name of the file that was uploaded
     :return: a boolean value.
     """
