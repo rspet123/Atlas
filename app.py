@@ -6,7 +6,7 @@ from keygen import generate_access_key
 from pymongo.errors import DuplicateKeyError
 import configparser
 from leaderboard import get_top_x_role, get_top_x_overall
-from user import User, get_user_by_discord
+from user import User, get_user_by_discord, get_all_users
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
@@ -106,10 +106,9 @@ def login():
 @app.route("/auth")
 def callback():
     """
-    It redirects the user to the current user page
-    :return: The redirect function is being returned.
+    It redirects the user to the login page.
+    :return: The user object
     """
-    """Callback for discord auth"""
     discord.callback()
     user = discord.fetch_user()
     return user.to_json()
@@ -123,26 +122,44 @@ def redirect_unauthorized(e):
     :param e: The exception that was raised
     :return: A redirect to the login page.
     """
-    """Errror handler for unauthed user, redirects to login"""
     return redirect(url_for("login"))
 
 
-@app.route("/me")
+@app.route("/user")
 @requires_authorization
 def curr_user():
     """
     If the user is in our database, we render the user page. If not, we redirect them to the signup page
     :return: The user object
     """
-    """User landing page, after logging in"""
     user = discord.fetch_user()
     print(user)
     disc_user = get_user_by_discord(str(user))
     print(disc_user)
     if disc_user is None:
-        # If the user isnt in our database, we make them signup
+        # If the user isn't in our database, we make them signup
         return "", 403
-    return disc_user
+    this_user = get_user_by_discord(str(disc_user))
+    return this_user, 200
+
+
+@app.route("/users")
+@requires_authorization
+def get_users():
+    """
+    `get_users` returns a list of all users and a status code of 200
+    :return: A list of all users in the database.
+    """
+    return {"users":get_all_users()}, 200
+
+
+@app.route("/users/<discord_name>")
+@requires_authorization
+def get_user(discord_name):
+    try:
+        return get_user_by_discord(discord_name).as_json(), 200
+    except Exception as e:
+        return "Can't find user", 500
 
 
 @app.get("/signup")
@@ -362,6 +379,7 @@ def get_top_x_by_role(role):
     """
     top = request.args.get("top", 10)
     return get_top_x_role(top, role)
+
 
 @app.get("/leaderboard")
 def get_top_x(role):

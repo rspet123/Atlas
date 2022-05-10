@@ -165,6 +165,15 @@ def get_user_by_discord(discord: str):
     return create_user_from_json(user)
 
 
+def get_all_users():
+    """
+    > This function returns a list of all the users in the database
+    :return: A list of all the users in the database.
+    """
+    users = list(db.users.find())
+    return users
+
+
 # Testing
 if __name__ == '__main__':
     pass
