@@ -3,8 +3,10 @@ from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 from parser_tools import parse_log, generate_key, parse_hero_stats
 from keygen import generate_access_key
+from pymongo.errors import DuplicateKeyError
 import configparser
-from user import User
+from leaderboard import get_top_x_role, get_top_x_overall
+from user import User, get_user_by_discord
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
@@ -135,7 +137,7 @@ def curr_user():
     """User landing page, after logging in"""
     user = discord.fetch_user()
     print(user)
-    disc_user = User.get_user_by_discord(str(user))
+    disc_user = get_user_by_discord(str(user))
     print(disc_user)
     if disc_user is None:
         # If the user isnt in our database, we make them signup
@@ -272,7 +274,7 @@ def logs():
     """Shows all games"""
     uploaded_matches = os.listdir(LOG_FOLDER)
     print(uploaded_matches)
-    return {"matches":uploaded_matches}
+    return {"matches": uploaded_matches}
 
 
 @app.get('/game_log/<log>/<player>')
@@ -292,7 +294,7 @@ def match_player_hero_stats(log, player):
     return out
 
 
-@app.post('/queue_ow1/<role>')
+@app.get('/queue_ow1/<role>')
 @requires_authorization
 def queue_player_ow1(role: str):
     """
@@ -306,22 +308,22 @@ def queue_player_ow1(role: str):
     try:
         user_to_queue = discord.fetch_user()
         queue_state = get_players_in_queue()
-        user_bnet = User.get_user_by_discord(str(user_to_queue))["bnet"]
+        user_bnet = get_user_by_discord(str(user_to_queue)).bnet_name
         add_to_queue(user_bnet, role)
         if can_start:
             # TODO websocket stuff
             # start queue
             team_1, team_2 = matchmake_3()
-            return {"team_1":team_1,"team_2":team_2},200
-        return {"players_in_queue":get_players_in_queue()}
+            return {"team_1": team_1, "team_2": team_2}, 200
+        return {"players_in_queue": queue_state}
 
-    except Exception as e:
+    except DuplicateKeyError as e:
         print(e)
-        return "",500
+        print(type(e))
+        return "", 500
 
 
-
-@app.post('/queue_ow2/<role>')
+@app.get('/queue_ow2/<role>')
 @requires_authorization
 def queue_player_ow2(role: str):
     """
@@ -335,7 +337,7 @@ def queue_player_ow2(role: str):
     try:
         user_to_queue = discord.fetch_user()
         queue_state = get_players_in_queue()
-        user_bnet = User.get_user_by_discord(str(user_to_queue))["bnet"]
+        user_bnet = get_user_by_discord(str(user_to_queue)).bnet_name
         add_to_queue(user_bnet, role)
         if can_start_ow2:
             # TODO websocket stuff
@@ -344,10 +346,33 @@ def queue_player_ow2(role: str):
             return {"team_1": team_1, "team_2": team_2}, 200
         return {"players_in_queue": get_players_in_queue()}
 
-    except Exception as e:
+    except DuplicateKeyError as e:
         print(e)
+        print(type(e))
         return "", 500
 
+
+@app.get("/leaderboard/<role>")
+def get_top_x_by_role(role):
+    """
+    It returns the top x (default 10) players for a given role
+
+    :param role: The role you want to get the top players for
+    :return: A list of the top 10 (or whatever number is specified) players in the specified role.
+    """
+    top = request.args.get("top", 10)
+    return get_top_x_role(top, role)
+
+@app.get("/leaderboard")
+def get_top_x(role):
+    """
+    It returns the top 10 (or whatever number is specified in the `top` query parameter) users for the given role
+
+    :param role: The role you want to get the top players for
+    :return: A list of the top 10 (or whatever number is specified) users by overall rating.
+    """
+    top = request.args.get("top", 10)
+    return get_top_x_overall(top)
 
 
 if __name__ == '__main__':

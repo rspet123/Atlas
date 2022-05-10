@@ -86,6 +86,9 @@ class Team:
         self.eligible = True
 
     def set_ineligible(self):
+        """
+        This function sets the eligibility of a team to False.
+        """
         self.eligible = False
 
     def __repr__(self):

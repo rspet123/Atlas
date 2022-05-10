@@ -35,6 +35,26 @@ def add_to_queue(bnet: str, role: str):
             # Player probably already in queue
             print(f"{type(e)}:{e}")
 
+def remove_from_queue(player:str):
+    """
+    It removes a player from all queues
+    :param player: the player's discord name
+    :type player: str
+    """
+    # some rly bad code to just remove a player from ~ALL~ queues, can rewrite this later
+    try:
+        dps_queue.delete_one({"_id":player})
+    except Exception as e:
+        print(e)
+    try:
+        support_queue.delete_one({"_id": player})
+    except Exception as e:
+        print(e)
+    try:
+        tank_queue.delete_one({"_id": player})
+    except Exception as e:
+        print(e)
+
 
 def get_players_in_queue():
     """
