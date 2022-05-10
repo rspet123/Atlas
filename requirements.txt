@@ -3,5 +3,5 @@ pymongo == 4.1.1
 Flask-Discord == 0.1.68
 dnspython == 2.2.1
 Turbo-Flask == 0.8.0
-openskill == 2.2.0
+openskill == 1.0.2
 flask-cors == 3.0.10
