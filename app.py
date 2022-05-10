@@ -287,7 +287,7 @@ def log(log):
     data = parse_log(log)
     scoreboard = data[2][data[0]]
     out = {"scoreboard": scoreboard, "player_heroes": data[1], "log": log}
-    return out
+    return out, 200
 
 
 @app.get('/game_logs')
@@ -299,7 +299,7 @@ def logs():
     """Shows all games"""
     uploaded_matches = os.listdir(LOG_FOLDER)
     print(uploaded_matches)
-    return {"matches": uploaded_matches}
+    return {"matches": uploaded_matches}, 200
 
 
 @app.get('/game_log/<log>/<player>')
@@ -316,7 +316,7 @@ def match_player_hero_stats(log, player):
     data = parse_log(log)
     hero_stats = parse_hero_stats(data[2])[player]
     out = {"hero_stats": hero_stats, "player_heroes": data[1], "player": player}
-    return out
+    return out, 200
 
 
 @app.get('/queue_ow1/<role>')
@@ -340,7 +340,7 @@ def queue_player_ow1(role: str):
             # start queue
             team_1, team_2 = matchmake_3()
             return {"team_1": team_1, "team_2": team_2}, 200
-        return {"players_in_queue": queue_state}
+        return {"players_in_queue": queue_state}, 200
 
     except DuplicateKeyError as e:
         print(e)
@@ -386,7 +386,7 @@ def get_top_x_by_role(role):
     :return: A list of the top 10 (or whatever number is specified) players in the specified role.
     """
     top = request.args.get("top", 10)
-    return get_top_x_role(top, role)
+    return get_top_x_role(top, role), 200
 
 
 @app.get("/leaderboard")
@@ -398,7 +398,7 @@ def get_top_x(role):
     :return: A list of the top 10 (or whatever number is specified) users by overall rating.
     """
     top = request.args.get("top", 10)
-    return get_top_x_overall(top)
+    return get_top_x_overall(top), 200
 
 
 if __name__ == '__main__':
