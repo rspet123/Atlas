@@ -344,7 +344,7 @@ def queue_player_ow2(role: str):
             # start queue
             team_1, team_2 = matchmake_3_ow2()
             return {"team_1": team_1, "team_2": team_2}, 200
-        return {"players_in_queue": get_players_in_queue()}
+        return {"players_in_queue": queue_state}
 
     except DuplicateKeyError as e:
         print(e)

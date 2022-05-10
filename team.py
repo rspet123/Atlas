@@ -97,7 +97,7 @@ class Team:
         :return: The team name and the average rating of the team.
         """
         return f"Team:{self.team_name} " \
-               f"Average Rating:{self.team_rating['mu'] / len(self.players)} " \
+               f"Average Rating:{self.team_rating['mu']} " \
                f"Captain: {self.captain} "
 
     def as_json(self):
@@ -149,9 +149,4 @@ def get_team_by_name(team_name: str) -> Team:
     return team_from_json(teams.find_one({"_id": team_name}))
 
 
-if __name__ == '__main__':
-    team_a = Team("Team Poggers Mountain", "player0")
-    for i in range(3, 10):
-        team_a.add_player(get_user_by_bnet(f"player{i}"), "support")
-    print(team_a)
-    print(team_a.get_roster())
+
