@@ -11,13 +11,14 @@ from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthor
 import requests
 import json
 from match import add_match
+from flask_cors import CORS
 from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2
 from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 
 REDIRECT_TO = "http://localhost:3000/login"
 
 app = Flask(__name__)
-
+CORS(app)
 # Get Config Data
 config = configparser.ConfigParser()
 config.read("config.ini")
