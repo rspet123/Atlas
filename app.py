@@ -208,6 +208,7 @@ def post_signup(id, name):
     # We now get the players ranks
     try:
         role_ranks = {}
+        # Getting the player's rank for each role from the API.
         ratings = json.loads(requests.get(f"https://ovrstat.com/stats/pc/{str(bnet).replace('#', '-')}").text)[
             "ratings"]
         for rating in ratings:

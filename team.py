@@ -1,9 +1,11 @@
 from user import User
+from db import teams
 
 
 class Team:
     players = []
     team_name = ""
+    avg_player_rating = 0
     team_rating = 0
     captain = ""
 
@@ -18,8 +20,17 @@ class Team:
         """
         self.team_name = team_name
         self.players = {}
+        self.avg_player_rating = 0
         self.team_rating = 0
         self.captain = captain
+        try:
+            teams.insert_one({"_id": self.team_name,
+                              "players": self.players,
+                              "avg_player_rating": self.avg_player_rating,
+                              "team_rating": self.team_rating,
+                              "captain": self.captain.bnet_name})
+        except Exception as e:
+            print(f"There is already a team named {self.team_name}")
 
     def add_player(self, player: User, role: str):
         """
@@ -30,8 +41,9 @@ class Team:
         :param role: The role of the player in the team
         :type role: str
         """
-        self.players[player] = role
-        self.team_rating += player.get_rating(role)[0]
+        # TODO add db
+        self.players[player.bnet_name] = role
+        self.avg_player_rating += player.get_rating(role)[0]
 
     def remove_player(self, player: User):
         """
@@ -50,3 +62,10 @@ class Team:
         return f"Team:{self.team_name} " \
                f"Average Rating:{self.team_rating / len(self.players)} " \
                f"Captain: {self.captain.name} "
+
+    def as_json(self):
+        return {"_id": self.team_name,
+                "players": self.players,
+                "avg_player_rating": self.avg_player_rating,
+                "team_rating": self.team_rating,
+                "captain": self.captain.bnet_name}
