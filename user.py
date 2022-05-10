@@ -149,8 +149,8 @@ def get_user_by_bnet(bnet: str):
     :type bnet: str
     :return: A user object
     """
-    user = db.users.find_one({"bnet": bnet})
-    return create_user_from_json(user)
+    this_user = db.users.find_one({"bnet": bnet})
+    return create_user_from_json(this_user)
 
 
 def get_user_by_discord(discord: str):
@@ -161,8 +161,9 @@ def get_user_by_discord(discord: str):
     :type discord: str
     :return: A user object
     """
-    user = db.users.find_one({"_id": discord})
-    return create_user_from_json(user)
+    this_user = db.users.find_one({"_id": discord})
+    print(this_user)
+    return create_user_from_json(this_user)
 
 
 def get_all_users():

@@ -14,6 +14,8 @@ from match import add_match
 from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2
 from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 
+REDIRECT_TO = "http://localhost:3000/login"
+
 app = Flask(__name__)
 
 # Get Config Data
@@ -111,7 +113,8 @@ def callback():
     """
     discord.callback()
     user = discord.fetch_user()
-    return user.to_json()
+    # Here's the redirect!
+    return redirect(REDIRECT_TO)
 
 
 @app.errorhandler(Unauthorized)
@@ -133,14 +136,12 @@ def curr_user():
     :return: The user object
     """
     user = discord.fetch_user()
-    print(user)
-    disc_user = get_user_by_discord(str(user))
-    print(disc_user)
-    if disc_user is None:
+    this_user = get_user_by_discord(str(user))
+    print(this_user)
+    if this_user is None:
         # If the user isn't in our database, we make them signup
         return "", 403
-    this_user = get_user_by_discord(str(disc_user))
-    return this_user, 200
+    return this_user.as_json(), 200
 
 
 @app.route("/users")
@@ -155,9 +156,16 @@ def get_users():
 
 @app.route("/users/<discord_name>")
 @requires_authorization
-def get_user(discord_name):
+def get_user(discord_name:str):
+    """
+    `get_user` takes a discord name and returns the user's information
+
+    :param discord_name: The discord name of the user you want to get
+    :type discord_name: str
+    :return: A JSON object containing the user's information.
+    """
     try:
-        return get_user_by_discord(discord_name).as_json(), 200
+        return get_user_by_discord(discord_name.replace("-","#")).as_json(), 200
     except Exception as e:
         return "Can't find user", 500
 
