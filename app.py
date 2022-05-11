@@ -1,6 +1,8 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
+
+import db
 from parser_tools import parse_log, generate_key, parse_hero_stats
 from keygen import generate_access_key
 from pymongo.errors import DuplicateKeyError
@@ -15,10 +17,10 @@ from flask_cors import CORS
 from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2
 from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 
-REDIRECT_TO = "http://localhost:3000/login"
+REDIRECT_TO = "http://127.0.0.1:3000/login"
 
 app = Flask(__name__)
-CORS(app,supports_credentials = True,origins = ["http://localhost:3000"])
+CORS(app, supports_credentials=True, origins=["http://127.0.0.1:3000"])
 # Get Config Data
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -125,7 +127,7 @@ def redirect_unauthorized(e):
     :param e: The exception that was raised
     :return: A redirect to the login page.
     """
-    return redirect(url_for("login"))
+    return "Unauthorized",401
 
 
 @app.route("/user")
@@ -136,12 +138,12 @@ def curr_user():
     :return: The user object
     """
     user = discord.fetch_user()
-    this_user = get_user_by_discord(str(user))
+    this_user = db.users.find_one({"_id":str(user)})
     print(this_user)
     if this_user is None:
         # If the user isn't in our database, we make them signup
         return "", 403
-    return this_user.as_json(), 200
+    return this_user, 200
 
 
 @app.route("/users")
@@ -151,12 +153,12 @@ def get_users():
     `get_users` returns a list of all users and a status code of 200
     :return: A list of all users in the database.
     """
-    return {"users":get_all_users()}, 200
+    return {"users": get_all_users()}, 200
 
 
-@app.route("/users/<discord_name>")
+@app.route("/users/name/<discord_name>")
 @requires_authorization
-def get_user(discord_name:str):
+def get_user_discord(discord_name: str):
     """
     `get_user` takes a discord name and returns the user's information
 
@@ -165,8 +167,23 @@ def get_user(discord_name:str):
     :return: A JSON object containing the user's information.
     """
     try:
-        return get_user_by_discord(discord_name.replace("-","#")).as_json(), 200
+        return db.users.find_one({"_id":discord_name.replace("-", "#")}), 200
     except Exception as e:
+        return "Can't find user", 500
+
+@app.route("/users/id/<id>")
+@requires_authorization
+def get_user_by_id(id):
+    """
+    `get_user` takes a discord name and returns the user's information
+    :param discord_name: The discord name of the user you want to get
+    :type discord_name: str
+    :return: A JSON object containing the user's information.
+    """
+    user = db.users.find_one({"id": int(id)})
+    if user is not None:
+        return user
+    else:
         return "Can't find user", 500
 
 
@@ -192,7 +209,6 @@ def post_signup(id, name):
     :param name: The name of the player
     :return: A dictionary of the players ranks for each role
     """
-    """post endpoint for signup data"""
     user = discord.fetch_user()
     # Through requests we get user information
     bnet = request.form["bnet"]

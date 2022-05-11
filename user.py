@@ -15,7 +15,7 @@ class User:
     role_ranks = {}
     role_ratings = {}
 
-    def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, id: str, name: str,
+    def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, player_id: str, name: str,
                  role_ranks: dict, update_db=True):
         """
         creates our new player object, as well as turning SR into our rating system
@@ -80,7 +80,7 @@ class User:
         """
         return hash(self.name)
 
-    def as_json(self):
+    def to_dict(self):
         """
         It returns a dictionary of the user's information for database use
         :return: A dictionary with the keys: _id, bnet, roles, info, avatar, id, name, ranks, ratings
