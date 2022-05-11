@@ -15,7 +15,7 @@ We Currently Use:
 - [MongoDB] - Database and User Storage
 - [Discord] - Login/Auth and Discord Server Integration
 
-
+# Doc
 ## Matchmaking Functions
 
 Matchmaker creates a lobby, we put that in the db to hold on to it, when the match is over, and the score is reported, that lobby object creates a match object and adds it to the db, and removes itself from from the db
