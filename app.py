@@ -67,6 +67,14 @@ def landing():
 
     return redirect(url_for("post_upload"))
 
+@app.route('/ping')
+def ping():
+    """
+    > This function returns the string "OK" and a status code of 200
+    :return: A tuple with the string "OK" and the integer 200.
+    """
+    return "OK",200
+
 
 @app.post('/upload')
 @requires_authorization
