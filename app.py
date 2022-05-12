@@ -64,7 +64,7 @@ def landing():
     It redirects the user to the post_upload page
     :return: A redirect to the post_upload page.
     """
-    """Landing page"""
+
     return redirect(url_for("post_upload"))
 
 
@@ -75,7 +75,6 @@ def post_upload():
     It takes the file that was uploaded, parses it, and adds it to the database
     :return: the string 'Error?!'
     """
-    """Post our file to the server"""
     if 'file' not in request.files:
         return "", 400
     file = request.files['file']
@@ -100,10 +99,9 @@ def post_upload():
 @app.route("/login")
 def login():
     """
-    > Redirect to discord auth
+    Redirect to discord auth
     :return: A redirect to the discord auth page.
     """
-    """Redirect to discord auth"""
     return discord.create_session()
 
 
@@ -127,7 +125,7 @@ def redirect_unauthorized(e):
     :param e: The exception that was raised
     :return: A redirect to the login page.
     """
-    return "Unauthorized",401
+    return "Unauthorized", 401
 
 
 @app.route("/user")
@@ -138,12 +136,12 @@ def curr_user():
     :return: The user object
     """
     user = discord.fetch_user()
-    this_user = db.users.find_one({"_id":str(user)})
+    this_user = db.users.find_one({"_id": str(user)})
     print(this_user)
     if this_user is None:
         # If the user isn't in our database, we make them signup
-        return "", 403
-    return this_user, 200
+        return {"userStatus": None}, 403
+    return {"userStatus": "Created", "user": this_user}, 200
 
 
 @app.route("/users")
@@ -167,9 +165,10 @@ def get_user_discord(discord_name: str):
     :return: A JSON object containing the user's information.
     """
     try:
-        return db.users.find_one({"_id":discord_name.replace("-", "#")}), 200
+        return db.users.find_one({"_id": discord_name.replace("-", "#")}), 200
     except Exception as e:
         return "Can't find user", 500
+
 
 @app.route("/users/id/<id>")
 @requires_authorization
