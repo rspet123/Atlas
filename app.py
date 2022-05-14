@@ -1,7 +1,10 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
-
+#import websockets
+#import asyncio
+from flask_socketio import SocketIO, emit
+from flask_sockets import Sockets
 import db
 from parser_tools import parse_log, generate_key, parse_hero_stats
 from keygen import generate_access_key
@@ -15,13 +18,16 @@ import json
 from match import add_match
 from flask_cors import CORS
 from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2
+from threading import Lock
 from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 
 REDIRECT_TO = "http://127.0.0.1:3000/login"
 
+# TODO https://stackoverflow.com/questions/39423646/flask-socketio-emit-to-specific-user
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://127.0.0.1:3000"])
 # Get Config Data
+
 config = configparser.ConfigParser()
 config.read("config.ini")
 CLIENT_ID = config.get("DISCORD", "CLIENT_ID")
@@ -43,9 +49,14 @@ LOG_FOLDER = "log_folder"
 app.config['UPLOAD_FOLDER'] = LOG_FOLDER
 ALLOWED_EXTENSIONS = {'txt'}
 
+# Threading config
+thread = None
+thread_lock = Lock()
+
+
 # Set up OAuth session
 discord = DiscordOAuth2Session(app)
-
+socketio = SocketIO(app)
 
 def allowed_file(filename):
     """
@@ -67,13 +78,14 @@ def landing():
 
     return redirect(url_for("post_upload"))
 
+
 @app.route('/ping')
 def ping():
     """
     > This function returns the string "OK" and a status code of 200
     :return: A tuple with the string "OK" and the integer 200.
     """
-    return "OK",200
+    return "OK", 200
 
 
 @app.post('/upload')
@@ -424,5 +436,19 @@ def get_top_x(role):
     return get_top_x_overall(top), 200
 
 
+# TODO make this work
+@socketio.on('connect')
+def socket_connect():
+    emit({"Connected":"True"})
+
+@socketio.on('queue')
+def socket_queue():
+    emit({"Queue":"In Queue"})
+
+@socketio.on('popped')
+def socket_queue_popped():
+    emit({"Queue":"Popped"})
+
+
 if __name__ == '__main__':
-    app.run()
+    socketio.run(app, host='0.0.0.0')
