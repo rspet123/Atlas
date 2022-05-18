@@ -16,7 +16,7 @@ from leaderboard import get_top_x_role, get_top_x_overall
 from user import User, get_user_by_discord, get_all_users
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
-# import json
+import json
 from match import add_match
 from flask_cors import CORS
 from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2
@@ -445,7 +445,7 @@ def get_top_x():
 
 @app.get("/lobby/<id>")
 def get_lobby(id):
-    return display_lobby(id)
+    return display_lobby(id), 200
 
 
 # TODO make this work
@@ -479,7 +479,7 @@ def socket_queue(json):
 
     add_to_queue(json['player'], json["role"])
     queue_state = get_players_in_queue()
-    if len(queue_state) == 12:
+    if can_start:
         team_1, team_2 = matchmake_3()
         new_lobby = Lobby(team_1, team_2)
         for player in (team_1 + team_2):

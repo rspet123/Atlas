@@ -51,9 +51,13 @@ def display_lobby(lobby_id: str) -> dict:
     team_1 = []
     team_2 = []
     for player in lobby["team_1"]:
-        team_1.append(users.find_one({"bnet":player["bnet"]}))
+        player_dict = users.find_one({"bnet": player["bnet"]})
+        player_dict["queued_role"] = player["role"]
+        team_2.append(player_dict)
     for player in lobby["team_2"]:
-        team_2.append(users.find_one({"bnet":player["bnet"]}))
+        player_dict = users.find_one({"bnet":player["bnet"]})
+        player_dict["queued_role"] = player["role"]
+        team_2.append(player_dict)
     return {"id":lobby["_id"],"host":lobby["host"],"team_1":team_1,"team_2":team_2}
 
 if __name__ == '__main__':
