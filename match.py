@@ -22,8 +22,8 @@ def hash_match(filename, buffer=1024):
 
 def add_match(match_log_file: str, scoreboard: dict, winning_team: str, uploading_user: str):
     """
-    It takes in a match log file, a scoreboard, the winning team, and the user who uploaded the match, and then it adds the
-    match to the database
+    It takes in a match log file, a scoreboard, the winning team, and the user who uploaded the match, and then it
+    adds the match to the database
 
     :param match_log_file: The name of the match log file
     :type match_log_file: str

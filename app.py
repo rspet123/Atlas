@@ -1,11 +1,12 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
-#import websockets
-#import asyncio
-from flask_socketio import SocketIO, emit
+# import websockets
+# import asyncio
+from flask_socketio import SocketIO, emit, send
 from flask_sockets import Sockets
 import db
+import time
 from parser_tools import parse_log, generate_key, parse_hero_stats
 from keygen import generate_access_key
 from pymongo.errors import DuplicateKeyError
@@ -14,7 +15,7 @@ from leaderboard import get_top_x_role, get_top_x_overall
 from user import User, get_user_by_discord, get_all_users
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
-import json
+# import json
 from match import add_match
 from flask_cors import CORS
 from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2
@@ -22,10 +23,10 @@ from threading import Lock
 from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 
 REDIRECT_TO = "http://127.0.0.1:3000/login"
+ORIGINS = ["https://127.0.0.1:3000"]
 
-# TODO https://stackoverflow.com/questions/39423646/flask-socketio-emit-to-specific-user
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://127.0.0.1:3000"])
+cors = CORS(app, supports_credentials=True, origins=ORIGINS)
 # Get Config Data
 
 config = configparser.ConfigParser()
@@ -53,10 +54,16 @@ ALLOWED_EXTENSIONS = {'txt'}
 thread = None
 thread_lock = Lock()
 
+# Set up sockets
+
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True)
 
 # Set up OAuth session
 discord = DiscordOAuth2Session(app)
-socketio = SocketIO(app)
+
+
+players_connected = {}
+
 
 def allowed_file(filename):
     """
@@ -425,7 +432,7 @@ def get_top_x_by_role(role):
 
 
 @app.get("/leaderboard")
-def get_top_x(role):
+def get_top_x():
     """
     It returns the top 10 (or whatever number is specified in the `top` query parameter) users for the given role
 
@@ -437,18 +444,39 @@ def get_top_x(role):
 
 
 # TODO make this work
+@socketio.on_error()
+def error_helper(error):
+    print(error)
+
 @socketio.on('connect')
-def socket_connect():
-    emit({"Connected":"True"})
+def socket_connect(json):
+    print("Connected")
+
+    players_connected[json["player"]] = request.sid
+    print(f"Player:{json['player']} - SID:{request.sid} Connected")
+    emit({"Connected": "True"})
+    emit({"Queue": "Popped"})
+
+@socketio.on('disconnect')
+def socket_disconnect():
+    print("Disconnected")
+    # del (players_connected[json["player"]])
+    # print(f"SID:{request.sid} Disconnected")
+    # emit({"Connected": "False"})
+
 
 @socketio.on('queue')
-def socket_queue():
-    emit({"Queue":"In Queue"})
+def socket_queue(json):
+    print(str(json))
+    print(f"Player:{json['player']} - SID:{request.sid} Disconnected")
+    emit({"queue_status": "In Queue", "Role": json["role"]})
 
-@socketio.on('popped')
-def socket_queue_popped():
-    emit({"Queue":"Popped"})
+
+@socketio.on('pop')
+def socket_queue_popped(message):
+    emit({"Queue": "Popped"})
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0')
+    print("Running - ")
+    socketio.run(app,port=5000, host='0.0.0.0')
