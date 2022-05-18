@@ -4,7 +4,6 @@ from werkzeug.utils import secure_filename
 # import websockets
 # import asyncio
 from flask_socketio import SocketIO, emit, send
-from flask_sockets import Sockets
 import db
 import time
 from parser_tools import parse_log, generate_key, parse_hero_stats
