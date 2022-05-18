@@ -460,7 +460,7 @@ def socket_connect(json):
     players_connected[json["player"]] = request.sid
     print(f"Player:{json['player']} - SID:{request.sid} Connected")
     emit({"Connected": "True"})
-    emit({"Queue": "Popped"})
+   
 
 @socketio.on('disconnect')
 def socket_disconnect():
@@ -476,15 +476,14 @@ def socket_queue(json):
 
     emit({"queue_status": "In Queue", "Role": json["role"]})
 
-
+    print("Adding")
     add_to_queue(json['player'], json["role"])
-    queue_state = get_players_in_queue()
     if can_start:
+        print(players_connected)
         team_1, team_2 = matchmake_3()
         new_lobby = Lobby(team_1, team_2)
-        for player in (team_1 + team_2):
-            if player["bnet"] in players_connected:
-                players_connected[player["bnet"]].emit("pop", {"match_id":new_lobby.lobby_name})
+        emit("pop", {"match_id":new_lobby.lobby_name, "players": team_1 + team_2}, Broadcast=True)
+    
 
 
 

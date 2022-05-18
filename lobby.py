@@ -53,7 +53,7 @@ def display_lobby(lobby_id: str) -> dict:
     for player in lobby["team_1"]:
         player_dict = users.find_one({"bnet": player["bnet"]})
         player_dict["queued_role"] = player["role"]
-        team_2.append(player_dict)
+        team_1.append(player_dict)
     for player in lobby["team_2"]:
         player_dict = users.find_one({"bnet":player["bnet"]})
         player_dict["queued_role"] = player["role"]
