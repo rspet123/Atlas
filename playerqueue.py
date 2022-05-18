@@ -263,7 +263,26 @@ def matchmake_3(sr_break=100, stdv_break=600, stdv_filtering=True, reverse=True,
     except ValueError:
         print("No teams found for selected parameters")
         min_diff = min(candidates, key=lambda x: x['diff'])
-    return min_diff["team_1"], min_diff["team_2"]
+    team_1 = min_diff["team_1"]
+    team_2 = min_diff["team_2"]
+    # Deleting the players from the queue after they have been matched.
+    for player in team_1:
+        if player["role"] == "tank":
+            tank_queue.delete_one({"bnet":player["bnet"]})
+        if player["role"] == "support":
+            support_queue.delete_one({"bnet":player["bnet"]})
+        if player["role"] == "dps":
+            dps_queue.delete_one({"bnet":player["bnet"]})
+    for player in team_2:
+        if player["role"] == "tank":
+            tank_queue.delete_one({"bnet":player["bnet"]})
+        if player["role"] == "support":
+            support_queue.delete_one({"bnet":player["bnet"]})
+        if player["role"] == "dps":
+            dps_queue.delete_one({"bnet":player["bnet"]})
+
+
+    return team_1, team_2
 
 def matchmake_3_ow2(sr_break=100, stdv_break=600, stdv_filtering=True, reverse=True, range=200):
     """
@@ -396,44 +415,45 @@ if __name__ == '__main__':
         if i % 3 == 2:
             add_to_queue(userbnet, "support")
 
-    teams = matchmake()
-    team_1 = teams[0]
-    team_2 = teams[1]
-    print("Matchmaker 1")
-    print(f"Team 1 SR AVG:{sum(player['rank'] for player in team_1) / len(team_1)}")
-    print(f"Team 1 SR STDV:{statistics.pstdev(player['rank'] for player in team_1)}")
-    for player in team_1:
-        print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
-    print(f"Team 2 SR AVG:{sum(player['rank'] for player in team_2) / len(team_1)}")
-    print(f"Team 2 SR STDV:{statistics.pstdev(player['rank'] for player in team_2)}")
-    for player in team_2:
-        print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
-    print("-------------------------------")
-    teams = matchmake_2()
-    team_1 = teams[0]
-    team_2 = teams[1]
-    print("Matchmaker 2")
-    print(f"Team 1 SR AVG:{sum(player['rank'] for player in team_1) / len(team_1)}")
-    print(f"Team 1 SR STDV:{statistics.pstdev(player['rank'] for player in team_1)}")
-    for player in team_1:
-        print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
-    print(f"Team 2 SR AVG:{sum(player['rank'] for player in team_2) / len(team_1)}")
-    print(f"Team 2 SR STDV:{statistics.pstdev(player['rank'] for player in team_2)}")
-    for player in team_2:
-        print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
-    print("-------------------------------")
-    start = time.time()
-    teams = matchmake_3()
-    end = time.time()
-    print(f"Time:{end - start}")
-    team_1 = teams[0]
-    team_2 = teams[1]
-    print("Matchmaker 3")
-    print(f"Team 1 SR AVG:{sum(player['rank'] for player in team_1) / len(team_1)}")
-    print(f"Team 1 SR STDV:{statistics.pstdev(player['rank'] for player in team_1)}")
-    for player in team_1:
-        print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
-    print(f"Team 2 SR AVG:{sum(player['rank'] for player in team_2) / len(team_1)}")
-    print(f"Team 2 SR STDV:{statistics.pstdev(player['rank'] for player in team_2)}")
-    for player in team_2:
-        print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
+    #teams = matchmake()
+    #team_1 = teams[0]
+    #team_2 = teams[1]
+    #print("Matchmaker 1")
+    #print(f"Team 1 SR AVG:{sum(player['rank'] for player in team_1) / len(team_1)}")
+    #print(f"Team 1 SR STDV:{statistics.pstdev(player['rank'] for player in team_1)}")
+    #for player in team_1:
+    #    print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
+    #print(f"Team 2 SR AVG:{sum(player['rank'] for player in team_2) / len(team_1)}")
+    #print(f"Team 2 SR STDV:{statistics.pstdev(player['rank'] for player in team_2)}")
+    #for player in team_2:
+    #    print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
+    #print("-------------------------------")
+    #teams = matchmake_2()
+    #team_1 = teams[0]
+    #team_2 = teams[1]
+    #print("Matchmaker 2")
+    #print(f"Team 1 SR AVG:{sum(player['rank'] for player in team_1) / len(team_1)}")
+    #print(f"Team 1 SR STDV:{statistics.pstdev(player['rank'] for player in team_1)}")
+    #for player in team_1:
+    #    print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
+    #print(f"Team 2 SR AVG:{sum(player['rank'] for player in team_2) / len(team_1)}")
+    #print(f"Team 2 SR STDV:{statistics.pstdev(player['rank'] for player in team_2)}")
+    #for player in team_2:
+    #    print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
+    #print("-------------------------------")
+    #start = time.time()
+    #teams = matchmake_3()
+    #end = time.time()
+    #print(f"Time:{end - start}")
+    #team_1 = teams[0]
+    #team_2 = teams[1]
+    #print("Matchmaker 3")
+    #print(f"Team 1 SR AVG:{sum(player['rank'] for player in team_1) / len(team_1)}")
+    #print(f"Team 1 SR STDV:{statistics.pstdev(player['rank'] for player in team_1)}")
+    #for player in team_1:
+    #    print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
+    #print(f"Team 2 SR AVG:{sum(player['rank'] for player in team_2) / len(team_1)}")
+    #print(f"Team 2 SR STDV:{statistics.pstdev(player['rank'] for player in team_2)}")
+    #for player in team_2:
+    #    print(f"{player['bnet']}, \tRank:{player['rank']}, \tRole:{player['role']}")
+#

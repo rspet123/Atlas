@@ -3,8 +3,9 @@ from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 # import websockets
 # import asyncio
+from lobby import Lobby, display_lobby
 from flask_socketio import SocketIO, emit, send
-from flask_sockets import Sockets
+#from flask_sockets import Sockets
 import db
 import time
 from parser_tools import parse_log, generate_key, parse_hero_stats
@@ -23,7 +24,7 @@ from threading import Lock
 from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 
 REDIRECT_TO = "http://127.0.0.1:3000/login"
-ORIGINS = ["https://127.0.0.1:3000"]
+ORIGINS = ["http://127.0.0.1:3000"]
 
 app = Flask(__name__)
 cors = CORS(app, supports_credentials=True, origins=ORIGINS)
@@ -442,6 +443,10 @@ def get_top_x():
     top = request.args.get("top", 10)
     return get_top_x_overall(top), 200
 
+@app.get("/lobby/<id>")
+def get_lobby(id):
+    return display_lobby(id)
+
 
 # TODO make this work
 @socketio.on_error()
@@ -467,14 +472,26 @@ def socket_disconnect():
 
 @socketio.on('queue')
 def socket_queue(json):
-    print(str(json))
-    print(f"Player:{json['player']} - SID:{request.sid} Disconnected")
+    players_connected[json["player"]] = request.sid
+
     emit({"queue_status": "In Queue", "Role": json["role"]})
 
 
-@socketio.on('pop')
-def socket_queue_popped(message):
-    emit({"Queue": "Popped"})
+    add_to_queue(json['player'], json["role"])
+    queue_state = get_players_in_queue()
+    if len(queue_state) == 12:
+        team_1, team_2 = matchmake_3()
+        new_lobby = Lobby(team_1, team_2)
+        for player in (team_1 + team_2):
+            if player["bnet"] in players_connected:
+                players_connected[player["bnet"]].emit("pop", {"match_id":new_lobby.lobby_name})
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
