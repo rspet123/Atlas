@@ -396,7 +396,7 @@ class PlayerQueue:
 
 # Testing, making fake users
 if __name__ == '__main__':
-    num_users = 30
+    num_users = 11
 
     #for i in range(num_users):
     #    try:

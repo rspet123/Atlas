@@ -479,7 +479,6 @@ def socket_queue(json):
     print("Adding")
     add_to_queue(json['player'], json["role"])
     if can_start:
-        print(players_connected)
         team_1, team_2 = matchmake_3()
         new_lobby = Lobby(team_1, team_2)
         emit("pop", {"match_id":new_lobby.lobby_name, "players": team_1 + team_2}, Broadcast=True)

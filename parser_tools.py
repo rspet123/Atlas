@@ -60,7 +60,7 @@ def parse_log(log, log_folder ="log_folder", columns=None):
             time_stamp = prev
             break
         prev = time
-    return(time_stamp,player_heroes,log_stats)
+    return time_stamp, player_heroes, log_stats
 
 def generate_key(size = 24):
     """

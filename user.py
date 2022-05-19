@@ -114,9 +114,9 @@ class User:
         :param new_rating: Rating = (mu, sigma)
         :type new_rating: Rating
         """
-        self.role_ratings[role]["mu"] = new_rating[0]
-        self.role_ratings[role]["sigma"] = new_rating[1]
-        db.users.update_one({"bnet": self.bnet_name}, update={"$set": self.as_json()})
+        self.role_ratings[role]["mu"] = new_rating.mu
+        self.role_ratings[role]["sigma"] = new_rating.sigma
+        db.users.update_one({"bnet": self.bnet_name}, update={"$set": self.to_dict()})
 
     def get_rating(self, role):
         """
