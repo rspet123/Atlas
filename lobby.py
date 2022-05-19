@@ -47,6 +47,14 @@ class Lobby:
 
 
 def display_lobby(lobby_id: str) -> dict:
+    """
+    It takes a lobby id, finds the lobby in the database, and returns a dictionary containing the lobby's id, host, and the
+    players in each team
+
+    :param lobby_id: The id of the lobby you want to display
+    :type lobby_id: str
+    :return: A dictionary with the lobby id, host, and the two teams.
+    """
     lobby = lobbies.find_one({"_id": lobby_id})
     team_1 = []
     team_2 = []

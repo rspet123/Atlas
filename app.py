@@ -19,7 +19,7 @@ import requests
 import json
 from match import add_match
 from flask_cors import CORS
-from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2
+from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2, remove_from_queue
 from threading import Lock
 from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 
@@ -84,7 +84,7 @@ def landing():
     :return: A redirect to the post_upload page.
     """
 
-    return redirect(url_for("post_upload"))
+    return redirect(url_for("get_upload"))
 
 
 @app.route('/ping')
@@ -96,9 +96,9 @@ def ping():
     return "OK", 200
 
 
-@app.post('/upload')
+@app.post('/upload/<lobby_id>')
 @requires_authorization
-def post_upload():
+def post_upload(lobby_id):
     """
     It takes the file that was uploaded, parses it, and adds it to the database
     :return: the string 'Error?!'
@@ -116,10 +116,20 @@ def post_upload():
         print(winner)
         data = parse_log(file.filename)
         scoreboard = data[2][data[0]]
+        lobby_details = display_lobby(lobby_id)
         add_match(file.filename,
                   scoreboard,
                   winner,
-                  str(user))
+                  str(user),
+                  str(lobby_id),
+                  lobby_details["team_1"],
+                  lobby_details["team_2"])
+        # TODO Update ratings based on winners :)
+        if winner == "1":
+            pass
+        if winner == "2":
+            pass
+
         return "", 201
     return "", 415
 
@@ -443,12 +453,13 @@ def get_top_x():
     top = request.args.get("top", 10)
     return get_top_x_overall(top), 200
 
+
 @app.get("/lobby/<id>")
+@requires_authorization
 def get_lobby(id):
     return display_lobby(id), 200
 
 
-# TODO make this work
 @socketio.on_error()
 def error_helper(error):
     print(error)
@@ -464,23 +475,30 @@ def socket_connect(json):
 
 @socketio.on('disconnect')
 def socket_disconnect():
-    print("Disconnected")
-    # del (players_connected[json["player"]])
-    # print(f"SID:{request.sid} Disconnected")
-    # emit({"Connected": "False"})
+    """
+    It removes the user from the queue on socket disconnect
+    """
+    user = discord.fetch_user()
+    remove_from_queue(str(user))
+    print(f"{str(user)} Disconnected")
 
 
 @socketio.on('queue')
 def socket_queue(json):
+    """
+    It takes in a json object, adds the player to the queue, and if there are enough players in the queue, it will create a
+    new lobby and send a message to all the players in the lobby
+
+    :param json: The json object that is sent from the client
+    """
     players_connected[json["player"]] = request.sid
-
     emit({"queue_status": "In Queue", "Role": json["role"]})
-
     print("Adding")
     add_to_queue(json['player'], json["role"])
     if can_start:
         team_1, team_2 = matchmake_3()
         new_lobby = Lobby(team_1, team_2)
+        # TODO Emit to all players that got queued, not broadcast to all
         emit("pop", {"match_id":new_lobby.lobby_name, "players": team_1 + team_2}, Broadcast=True)
     
 
