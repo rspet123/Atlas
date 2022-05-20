@@ -498,7 +498,6 @@ def socket_queue(json):
     if can_start:
         team_1, team_2 = matchmake_3()
         new_lobby = Lobby(team_1, team_2)
-        # TODO Emit to all players that got queued, not broadcast to all
         emit("pop", {"match_id":new_lobby.lobby_name, "players": team_1 + team_2}, Broadcast=True)
     
 

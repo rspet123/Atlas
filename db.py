@@ -20,3 +20,4 @@ support_queue = db["Support_Queue"]
 teams = db["Teams"]
 team_queue = db["Team_Queue"]
 lobbies = db["Lobbies"]
+

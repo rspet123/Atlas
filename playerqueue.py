@@ -398,13 +398,13 @@ class PlayerQueue:
 if __name__ == '__main__':
     num_users = 11
 
-    #for i in range(num_users):
-    #    try:
-    #        users.insert_one({"_id": f"player{i}", "bnet": f"player{i}", "ranks": {"tank": random.randint(1500, 5000),
-    #                                                                               "damage": random.randint(1500, 5000),
-    #                                                                               "support": random.randint(1500, 5000)}})
-    #    except Exception as e:
-    #        print(type(e))
+    for i in range(num_users):
+        try:
+            users.insert_one({"_id": f"player{i}", "bnet": f"player{i}", "ranks": {"tank": random.randint(1500, 5000),
+                                                                                   "dps": random.randint(1500, 5000),
+                                                                                   "support": random.randint(1500, 5000)}})
+        except Exception as e:
+            print(type(e))
     empty_queue()
     for i in range(num_users):
         userbnet = users.find_one({"_id": f"player{i}"})["bnet"]
