@@ -117,11 +117,9 @@ class User:
         :param new_rating: Rating = (mu, sigma)
         :type new_rating: Rating
         """
-        print(new_rating)
         self.role_ratings[role]["mu"] = float(new_rating.mu)
         self.role_ratings[role]["sigma"] = float(new_rating.sigma)
         this_user = self.to_dict()
-        print(this_user)
         db.users.update_one({"bnet": self.bnet_name}, update={"$set": this_user})
 
     def get_rating(self, role):
@@ -206,7 +204,7 @@ def adjust_team_rating(team_1: list, team_2: list, winner: str):
     :type team_2: list
     :param winner: 1 or 2, depending on which team won
     :type winner: str
-    :return: A list of tuples. Each tuple contains the new rating and the new rating deviation.
+    :return: 0 if we aren't given a winner, else void
     """
     team_1_players = [[get_user_by_bnet(player["bnet"]), player["queued_role"]] for player in team_1]
     team_2_players = [[get_user_by_bnet(player["bnet"]), player["queued_role"]] for player in team_2]
@@ -219,36 +217,48 @@ def adjust_team_rating(team_1: list, team_2: list, winner: str):
         new_2, new_1 = rate([team_2_ratings, team_1_ratings])
     else:
         return 0
+    # Printing out the amount of points that each player gained or lost.
+    for i,player in enumerate(team_1_players):
+        adj_amt = (player[0].get_rating(player[1]).mu - new_1[i][0])
+        adjustment = "lost" if  adj_amt >= 0 else "gained"
+        print(f"{player[0].bnet_name} {adjustment} {abs(adj_amt)} points")
+
+    for i,player in enumerate(team_2_players):
+        adj_amt = (player[0].get_rating(player[1]).mu - new_2[i][0])
+        adjustment = "lost" if adj_amt >= 0 else "gained"
+        print(f"{player[0].bnet_name} {adjustment} {abs(adj_amt)} points")
+
     for i, pair in enumerate(zip(new_1, new_2)):
         team_1_players[i][0].update_rating(team_1_players[i][1], Rating(pair[0][0],pair[0][1]))
         team_2_players[i][0].update_rating(team_2_players[i][1], Rating(pair[1][0],pair[1][1]))
-    print(f"Team 1 Old Ratings {team_1_ratings}")
-    print(f"Team 1 New Ratings {new_1}")
-    print(f"Team 2 Old Ratings {team_2_ratings}")
-    print(f"Team 2 New Ratings {new_2}")
+    # Will do smth with these later
+    #print(f"Team 1 Old Ratings {team_1_ratings}")
+    #print(f"Team 1 New Ratings {new_1}")
+    #print(f"Team 2 Old Ratings {team_2_ratings}")
+    #print(f"Team 2 New Ratings {new_2}")
 
 
 # Testing
 if __name__ == '__main__':
-    # adjust_team_rating([{"bnet": "player0", "queued_role": "tank"}], [{"bnet": "player1", "queued_role": "tank"}], "1")
+    adjust_team_rating([{"bnet": "player7", "queued_role": "tank"},{"bnet": "player3", "queued_role": "tank"}], [{"bnet": "player5", "queued_role": "tank"},{"bnet": "player11", "queued_role": "tank"}], "2")
     # db.users.delete_many({})
-    team_1 = []
-    team_2 = []
-    for i in range(0, 30):
-       if i % 2 == 0:
-           team_1.append(User(f"player{i}", f"player{i}",
-                              ["tank"], f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
-                              696969696, f"player{i}",
-                              {"tank": random.randint(1500, 5000),
-                               "support": random.randint(1500, 5000),
-                               "dps": random.randint(1500, 5000)}, True))
-       else:
-           team_2.append(User(f"player{i}", f"player{i}",
-                              ["tank"], f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
-                              696969696, f"player{i}",
-                              {"tank": random.randint(1500, 5000),
-                               "support": random.randint(1500, 5000),
-                               "dps": random.randint(1500, 5000)}, True))
+    #team_1 = []
+    #team_2 = []
+    #for i in range(0, 30):
+    #   if i % 2 == 0:
+    #       team_1.append(User(f"player{i}", f"player{i}",
+    #                          ["tank"], f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
+    #                          696969696, f"player{i}",
+    #                          {"tank": random.randint(1500, 5000),
+    #                           "support": random.randint(1500, 5000),
+    #                           "dps": random.randint(1500, 5000)}, True))
+    #   else:
+    #       team_2.append(User(f"player{i}", f"player{i}",
+    #                          ["tank"], f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
+    #                          696969696, f"player{i}",
+    #                          {"tank": random.randint(1500, 5000),
+    #                           "support": random.randint(1500, 5000),
+    #                           "dps": random.randint(1500, 5000)}, True))
 # print("Team 1")
 # for player in team_1:
 #    print(f"{player.name} - {player.role_ratings['dps']}")
