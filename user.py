@@ -15,7 +15,7 @@ class User:
     role_ranks = {}
     role_ratings = {}
 
-    def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, player_id: str, name: str,
+    def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, player_id: int, name: str,
                  role_ranks: dict, update_db=True, ratings = None):
         """
         creates our new player object, as well as turning SR into our rating system
@@ -61,7 +61,7 @@ class User:
                                  "roles": preferred_roles,
                                  "info": self.info,
                                  "avatar": avatar,
-                                 "id": self.user_id,
+                                 "id": self.discord_id,
                                  "name": name,
                                  "ranks": role_ranks,
                                  "ratings": self.role_ratings})
@@ -208,8 +208,8 @@ def adjust_team_rating(team_1: list, team_2: list, winner: str):
     :type winner: str
     :return: A list of tuples. Each tuple contains the new rating and the new rating deviation.
     """
-    team_1_players = [[get_user_by_bnet(player["bnet"]), player["role"]] for player in team_1]
-    team_2_players = [[get_user_by_bnet(player["bnet"]), player["role"]] for player in team_2]
+    team_1_players = [[get_user_by_bnet(player["bnet"]), player["queued_role"]] for player in team_1]
+    team_2_players = [[get_user_by_bnet(player["bnet"]), player["queued_role"]] for player in team_2]
     team_1_ratings = [player[0].get_rating(player[1]) for player in team_1_players]
     team_2_ratings = [player[0].get_rating(player[1]) for player in team_2_players]
 
@@ -230,25 +230,25 @@ def adjust_team_rating(team_1: list, team_2: list, winner: str):
 
 # Testing
 if __name__ == '__main__':
-    adjust_team_rating([{"bnet": "player0", "role": "tank"}], [{"bnet": "player1", "role": "tank"}], "1")
+    # adjust_team_rating([{"bnet": "player0", "queued_role": "tank"}], [{"bnet": "player1", "queued_role": "tank"}], "1")
     # db.users.delete_many({})
-    # team_1 = []
-    # team_2 = []
-    # for i in range(0, 30):
-    #    if i % 2 == 0:
-    #        team_1.append(User(f"player{i}", f"player{i}",
-    #                           ["tank"], f"player{i}",
-    #                           696969696, f"player{i}",
-    #                           {"tank": random.randint(1500, 5000),
-    #                            "support": random.randint(1500, 5000),
-    #                            "dps": random.randint(1500, 5000)}, True))
-    #    else:
-    #        team_2.append(User(f"player{i}", f"player{i}",
-    #                           ["tank"], f"player{i}",
-    #                           696969696, f"player{i}",
-    #                           {"tank": random.randint(1500, 5000),
-    #                            "support": random.randint(1500, 5000),
-    #                            "dps": random.randint(1500, 5000)}, True))
+    team_1 = []
+    team_2 = []
+    for i in range(0, 30):
+       if i % 2 == 0:
+           team_1.append(User(f"player{i}", f"player{i}",
+                              ["tank"], f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
+                              696969696, f"player{i}",
+                              {"tank": random.randint(1500, 5000),
+                               "support": random.randint(1500, 5000),
+                               "dps": random.randint(1500, 5000)}, True))
+       else:
+           team_2.append(User(f"player{i}", f"player{i}",
+                              ["tank"], f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
+                              696969696, f"player{i}",
+                              {"tank": random.randint(1500, 5000),
+                               "support": random.randint(1500, 5000),
+                               "dps": random.randint(1500, 5000)}, True))
 # print("Team 1")
 # for player in team_1:
 #    print(f"{player.name} - {player.role_ratings['dps']}")
