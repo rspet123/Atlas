@@ -194,17 +194,15 @@ def get_all_users():
     return users
 
 
-# TODO store stats on user profile, *NOT* on the match page
-# storing on match page is gonna eat up our storage too quick
 def update_player_hero_stats(bnet: str, hero_stats: dict):
     """
-    If the user doesn't have hero stats, add them. If they do, add the new stats to the old stats
+    This function takes a battletag and a dictionary of hero stats, and adds the hero stats to the user's hero stats
 
-    :param bnet: str = The battletag of the user
+    :param bnet: str = The user's battletag
     :type bnet: str
     :param hero_stats: dict
     :type hero_stats: dict
-    :return: N/A
+    :return: Nothing, Updates database (or sometime None)
     """
     this_user = db.users.find_one({"bnet": bnet})
     if "hero_stats" not in this_user:

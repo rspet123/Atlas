@@ -77,8 +77,9 @@ def generate_key(size = 24):
 
 def diff_stats(players:dict,player:dict,last_tick:dict,stat:str):
     """
-    > If the player exists in the players dictionary, and the hero exists in the player's dictionary, and the stat exists in
+    If the player exists in the players dictionary, and the hero exists in the player's dictionary, and the stat exists in
     the hero's dictionary, then add the stat to the hero's dictionary
+    Nice helper function for diffing stats between frames
 
     :param players: dict
     :type players: dict
@@ -89,7 +90,6 @@ def diff_stats(players:dict,player:dict,last_tick:dict,stat:str):
     :param stat: the stat we're looking at
     :type stat: str
     """
-    """Nice helper function for diffing stats between frames"""
     try:
         players[player["Player"]][player["Hero"]][stat] = \
             players[player["Player"]][player["Hero"]].get(stat, 0) + player[stat] - \
@@ -124,12 +124,12 @@ def parse_hero_stats(stats_log):
                 players[player["Player"]] = {}
             if player["Player"] not in last_tick:
                 last_tick[player["Player"]] = {}
-
-            if player["Hero"] not in players[player["Player"]]:
-                players[player["Player"]][player["Hero"]] = {}
-            for stat in STAT_COLUMNS:
-                #Calculate and update stats for each player and each hero
-                diff_stats(players, player, last_tick, stat)
+            if player["Hero"] is not "":
+                if player["Hero"] not in players[player["Player"]]:
+                    players[player["Player"]][player["Hero"]] = {}
+                for stat in STAT_COLUMNS:
+                    # Calculate and update stats for each player and each hero
+                    diff_stats(players, player, last_tick, stat)
             last_tick[player["Player"]] = player
     return players
 

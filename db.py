@@ -1,12 +1,12 @@
 import configparser
 from pymongo import MongoClient
-#Get Config Data
+
+# Get Config Data
 config = configparser.ConfigParser()
 config.read("config.ini")
 
-USERNAME = config.get("DATABASE","USERNAME")
-PASSWORD = config.get("DATABASE","PASSWORD")
-
+USERNAME = config.get("DATABASE", "USERNAME")
+PASSWORD = config.get("DATABASE", "PASSWORD")
 
 client = MongoClient(f"mongodb+srv://{USERNAME}:{PASSWORD}@gauntletdb.glcqr.mongodb.net")
 
@@ -21,4 +21,4 @@ teams = db["Teams"]
 team_queue = db["Team_Queue"]
 lobbies = db["Lobbies"]
 if __name__ == "__main__":
-    users.delete_many({"id":""})
+    users.delete_many({"id": ""})

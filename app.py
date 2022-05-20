@@ -10,7 +10,7 @@ from keygen import generate_access_key
 from pymongo.errors import DuplicateKeyError
 import configparser
 from leaderboard import get_top_x_role, get_top_x_overall
-from user import User, get_user_by_discord, get_all_users, adjust_team_rating,update_player_hero_stats
+from user import User, get_user_by_discord, get_all_users, adjust_team_rating, update_player_hero_stats
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
@@ -121,7 +121,7 @@ def post_upload(lobby_id):
                 hero_stats[k][hero]["time"] = time_played
         for player_name in hero_stats.keys():
             print(f"Updating {player_name}")
-            update_player_hero_stats(player_name,hero_stats[player_name])
+            update_player_hero_stats(player_name, hero_stats[player_name])
         add_match(file.filename,
                   scoreboard,
                   winner,
@@ -369,7 +369,7 @@ def match_player_hero_stats(log, player):
     """Displays Hero stats for given player in given match"""
     data = parse_log(log)
     hero_stats = parse_hero_stats(data[2])[player]
-    out = {"hero_stats": hero_stats, "player_heroes": data[1], "player": player}
+    out = {"hero_stats": hero_stats, "player_heroes": data[1][player], "player": player}
     return out, 200
 
 
@@ -458,13 +458,57 @@ def get_top_x():
 @app.get("/lobby/<id>")
 @requires_authorization
 def get_lobby(id):
+    """
+    `get_lobby` returns the lobby with the given id
+
+    :param id: The id of the lobby you want to get
+    :return: The display_lobby function is being returned.
+    """
     return display_lobby(id), 200
 
 
 @app.get("/match/<id>")
 @requires_authorization
 def get_match(id):
+    """
+    It returns the match that is identified by the id parameter
+
+    :param id: The id of the match you want to get
+    :return: The function display_match is being returned.
+    """
     return display_match(id), 200
+
+
+@app.get("/user_stats/<discord_name>")
+def get_player_stats(discord_name):
+    """
+    This function takes in a discord name and returns the hero stats of that player.
+
+    :param discord_name: The discord name of the player you want to get the stats of
+    :return: A dictionary of hero stats
+    """
+    hero_stats = db.users.find_one({"_id": discord_name})["hero_stats"]
+    return hero_stats
+
+
+@app.get("/hero_leaderboard/<hero>/<statname>")
+def hero_stat_leaderboard(hero, statname):
+    """
+    > Get all players who have played the hero, sort them by the stat, and return the top X
+
+    :param hero: The hero you want to get the leaderboard for
+    :param statname: The name of the stat you want to sort by
+    :return: A list of players who have played the hero and have the stat.
+    """
+    top = request.args.get("top", 10)
+    player_list = list(db.users.find())
+    # Get all players with stats
+    # This could be better
+    player_list = [player for player in player_list if player.get("hero_stats", False)]
+    # get all players who have played that specific hero
+    player_list = [player for player in player_list if player["hero_stats"].get(hero, False)]
+    player_list = sorted(player_list, key=lambda i: i["hero_stats"][hero][statname], reverse=True)
+    return {f"top {top}": player_list[:top]}
 
 
 @socketio.on_error()
@@ -474,6 +518,11 @@ def error_helper(error):
 
 @socketio.on('connect')
 def socket_connect(json):
+    """
+    It takes a JSON object, and then adds the player's name and socket ID to a dictionary
+
+    :param json: The JSON object that is sent from the client
+    """
     print("Connected")
 
     players_connected[json["player"]] = request.sid

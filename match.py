@@ -52,4 +52,10 @@ def add_match(match_log_file: str, scoreboard: dict, winning_team: str, uploadin
 
 
 def display_match(id):
+    """
+    It finds the match with the given id and returns it
+
+    :param id: the id of the match you want to display
+    :return: A dictionary of the match with the given id.
+    """
     return matches.find_one({"_id": id})
