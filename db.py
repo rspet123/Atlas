@@ -21,5 +21,4 @@ teams = db["Teams"]
 team_queue = db["Team_Queue"]
 lobbies = db["Lobbies"]
 if __name__ == "__main__":
-    pass
-    #users.delete_many({"id":696969696})
+    users.delete_many({"id":""})

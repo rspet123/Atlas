@@ -16,7 +16,7 @@ class User:
     role_ratings = {}
 
     def __init__(self, discord_name: str, bnet_name: str, preferred_roles: list, avatar: str, player_id: int, name: str,
-                 role_ranks: dict, update_db=True, ratings = None):
+                 role_ranks: dict, update_db=True, ratings=None):
         """
         creates our new player object, as well as turning SR into our rating system
 
@@ -109,7 +109,7 @@ class User:
                                                           "ranks": self.role_ranks,
                                                           "ratings": self.role_ratings})
 
-    def update_rating(self, role:str, new_rating: Rating):
+    def update_rating(self, role: str, new_rating: Rating):
         """
         It updates the user's rating for a given role, and then updates the database with the new rating
 
@@ -194,6 +194,37 @@ def get_all_users():
     return users
 
 
+# TODO store stats on user profile, *NOT* on the match page
+# storing on match page is gonna eat up our storage too quick
+def update_player_hero_stats(bnet: str, hero_stats: dict):
+    """
+    If the user doesn't have hero stats, add them. If they do, add the new stats to the old stats
+
+    :param bnet: str = The battletag of the user
+    :type bnet: str
+    :param hero_stats: dict
+    :type hero_stats: dict
+    :return: N/A
+    """
+    this_user = db.users.find_one({"bnet": bnet})
+    if "hero_stats" not in this_user:
+        print(f"No Hero Stats for {this_user['_id']}")
+        this_user["hero_stats"] = hero_stats
+        db.users.update_one({"_id": this_user["_id"]}, update={"$set": this_user})
+        return None
+    for k, v in hero_stats.items():
+        # k = Hero name
+        # v = hero stats
+        if k not in this_user["hero_stats"]:
+            # if the hero isn't found, we just add the hero data straight from the dict, no need to add prev data
+            print(f"No {k} Stats for {this_user['_id']}")
+            this_user["hero_stats"][k] = v
+        else:
+            for stat, val in v.items():
+                this_user["hero_stats"][k][stat] += val
+    db.users.update_one({"_id": this_user["_id"]}, update={"$set": this_user})
+
+
 def adjust_team_rating(team_1: list, team_2: list, winner: str):
     """
     It takes in two lists of players, and a winner, and updates the ratings of the players in the database
@@ -218,47 +249,49 @@ def adjust_team_rating(team_1: list, team_2: list, winner: str):
     else:
         return 0
     # Printing out the amount of points that each player gained or lost.
-    for i,player in enumerate(team_1_players):
+    for i, player in enumerate(team_1_players):
         adj_amt = (player[0].get_rating(player[1]).mu - new_1[i][0])
-        adjustment = "lost" if  adj_amt >= 0 else "gained"
+        adjustment = "lost" if adj_amt >= 0 else "gained"
         print(f"{player[0].bnet_name} {adjustment} {abs(adj_amt)} points")
 
-    for i,player in enumerate(team_2_players):
+    for i, player in enumerate(team_2_players):
         adj_amt = (player[0].get_rating(player[1]).mu - new_2[i][0])
         adjustment = "lost" if adj_amt >= 0 else "gained"
         print(f"{player[0].bnet_name} {adjustment} {abs(adj_amt)} points")
 
     for i, pair in enumerate(zip(new_1, new_2)):
-        team_1_players[i][0].update_rating(team_1_players[i][1], Rating(pair[0][0],pair[0][1]))
-        team_2_players[i][0].update_rating(team_2_players[i][1], Rating(pair[1][0],pair[1][1]))
+        team_1_players[i][0].update_rating(team_1_players[i][1], Rating(pair[0][0], pair[0][1]))
+        team_2_players[i][0].update_rating(team_2_players[i][1], Rating(pair[1][0], pair[1][1]))
     # Will do smth with these later
-    #print(f"Team 1 Old Ratings {team_1_ratings}")
-    #print(f"Team 1 New Ratings {new_1}")
-    #print(f"Team 2 Old Ratings {team_2_ratings}")
-    #print(f"Team 2 New Ratings {new_2}")
+    # print(f"Team 1 Old Ratings {team_1_ratings}")
+    # print(f"Team 1 New Ratings {new_1}")
+    # print(f"Team 2 Old Ratings {team_2_ratings}")
+    # print(f"Team 2 New Ratings {new_2}")
 
 
 # Testing
 if __name__ == '__main__':
-    adjust_team_rating([{"bnet": "player7", "queued_role": "tank"},{"bnet": "player3", "queued_role": "tank"}], [{"bnet": "player5", "queued_role": "tank"},{"bnet": "player11", "queued_role": "tank"}], "2")
+    # adjust_team_rating([{"bnet": "player7", "queued_role": "tank"},{"bnet": "player3", "queued_role": "tank"}], [{"bnet": "player5", "queued_role": "tank"},{"bnet": "player11", "queued_role": "tank"}], "2")
     # db.users.delete_many({})
-    #team_1 = []
-    #team_2 = []
-    #for i in range(0, 30):
-    #   if i % 2 == 0:
-    #       team_1.append(User(f"player{i}", f"player{i}",
-    #                          ["tank"], f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
-    #                          696969696, f"player{i}",
-    #                          {"tank": random.randint(1500, 5000),
-    #                           "support": random.randint(1500, 5000),
-    #                           "dps": random.randint(1500, 5000)}, True))
-    #   else:
-    #       team_2.append(User(f"player{i}", f"player{i}",
-    #                          ["tank"], f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
-    #                          696969696, f"player{i}",
-    #                          {"tank": random.randint(1500, 5000),
-    #                           "support": random.randint(1500, 5000),
-    #                           "dps": random.randint(1500, 5000)}, True))
+    team_1 = []
+    team_2 = []
+    for i in range(0, 30):
+        if i % 2 == 0:
+            team_1.append(User(f"player{i}", f"player{i}",
+                               ["tank"],
+                               f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
+                               696969696, f"player{i}",
+                               {"tank": random.randint(1500, 5000),
+                                "support": random.randint(1500, 5000),
+                                "dps": random.randint(1500, 5000)}, True))
+        else:
+            team_2.append(User(f"player{i}", f"player{i}",
+                               ["tank"],
+                               f"https://static.wikia.nocookie.net/starcraft/images/b/be/SC2_Portrait_Overwatch_Tracer.jpg/revision/latest?cb=20151113020737",
+                               696969696, f"player{i}",
+                               {"tank": random.randint(1500, 5000),
+                                "support": random.randint(1500, 5000),
+                                "dps": random.randint(1500, 5000)}, True))
 # print("Team 1")
 # for player in team_1:
 #    print(f"{player.name} - {player.role_ratings['dps']}")

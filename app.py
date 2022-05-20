@@ -1,11 +1,8 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
-# import websockets
-# import asyncio
 from lobby import Lobby, display_lobby
 from flask_socketio import SocketIO, emit, send
-#from flask_sockets import Sockets
 import db
 import time
 from parser_tools import parse_log, generate_key, parse_hero_stats
@@ -13,13 +10,14 @@ from keygen import generate_access_key
 from pymongo.errors import DuplicateKeyError
 import configparser
 from leaderboard import get_top_x_role, get_top_x_overall
-from user import User, get_user_by_discord, get_all_users, adjust_team_rating
+from user import User, get_user_by_discord, get_all_users, adjust_team_rating,update_player_hero_stats
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
-from match import add_match
+from match import add_match, display_match
 from flask_cors import CORS
-from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2, remove_from_queue
+from playerqueue import get_players_in_queue, add_to_queue, matchmake_3, matchmake_3_ow2, can_start, can_start_ow2, \
+    remove_from_queue
 from threading import Lock
 from ow_info import MAPS, COLUMNS, STAT_COLUMNS
 
@@ -61,7 +59,6 @@ socketio = SocketIO(app, cors_allowed_origins="*", logger=True)
 
 # Set up OAuth session
 discord = DiscordOAuth2Session(app)
-
 
 players_connected = {}
 
@@ -117,6 +114,14 @@ def post_upload(lobby_id):
         data = parse_log(file.filename)
         scoreboard = data[2][data[0]]
         lobby_details = display_lobby(lobby_id)
+        hero_stats = parse_hero_stats(data[2])
+        # Puts the time played into the stats
+        for k, value in data[1].items():
+            for hero, time_played in value.items():
+                hero_stats[k][hero]["time"] = time_played
+        for player_name in hero_stats.keys():
+            print(f"Updating {player_name}")
+            update_player_hero_stats(player_name,hero_stats[player_name])
         add_match(file.filename,
                   scoreboard,
                   winner,
@@ -124,7 +129,7 @@ def post_upload(lobby_id):
                   str(lobby_id),
                   lobby_details["team_1"],
                   lobby_details["team_2"])
-        adjust_team_rating(lobby_details["team_1"],lobby_details["team_2"],winner)
+        adjust_team_rating(lobby_details["team_1"], lobby_details["team_2"], winner)
 
         return "", 201
     return "", 415
@@ -285,11 +290,11 @@ def post_signup(id, name):
     try:
         role_ranks = {}
         # Getting the player's rank for each role from the API.
-        ratings = json.loads(requests.get(f"https://ovrstat.com/stats/pc/{str(bnet).replace('#', '-')}").text)[
+        ranks = json.loads(requests.get(f"https://ovrstat.com/stats/pc/{str(bnet).replace('#', '-')}").text)[
             "ratings"]
-        for rating in ratings:
-            print(f"Role {rating['role']}: {rating['level']}")
-            role_ranks[rating["role"]] = rating['level']
+        for rank in ranks:
+            print(f"Role {rank['role']}: {rank['level']}")
+            role_ranks[rank["role"]] = rank['level']
     except TypeError:
         # Handle the NoneType error from iterating an empty element, ie the player hasn't placed
         print(f"Type Error {str(bnet).replace('#', '-')}")
@@ -456,9 +461,16 @@ def get_lobby(id):
     return display_lobby(id), 200
 
 
+@app.get("/match/<id>")
+@requires_authorization
+def get_match(id):
+    return display_match(id), 200
+
+
 @socketio.on_error()
 def error_helper(error):
     print(error)
+
 
 @socketio.on('connect')
 def socket_connect(json):
@@ -467,7 +479,7 @@ def socket_connect(json):
     players_connected[json["player"]] = request.sid
     print(f"Player:{json['player']} - SID:{request.sid} Connected")
     emit({"Connected": "True"})
-   
+
 
 @socketio.on('disconnect')
 def socket_disconnect():
@@ -494,17 +506,9 @@ def socket_queue(json):
     if can_start:
         team_1, team_2 = matchmake_3()
         new_lobby = Lobby(team_1, team_2)
-        emit("pop", {"match_id":new_lobby.lobby_name, "players": team_1 + team_2}, Broadcast=True)
-    
-
-
-
-
-
-
-
+        emit("pop", {"match_id": new_lobby.lobby_name, "players": team_1 + team_2}, Broadcast=True)
 
 
 if __name__ == '__main__':
     print("Running - ")
-    socketio.run(app,port=5000, host='0.0.0.0')
+    socketio.run(app, port=5000, host='0.0.0.0')

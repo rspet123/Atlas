@@ -20,7 +20,8 @@ def hash_match(filename, buffer=1024):
     return h.hexdigest()
 
 
-def add_match(match_log_file: str, scoreboard: dict, winning_team: str, uploading_user: str, lobby_id: str, team_1: list, team_2: list):
+def add_match(match_log_file: str, scoreboard: dict, winning_team: str, uploading_user: str, lobby_id: str,
+              team_1: list, team_2: list):
     """
     `add_match` takes a match log file, a scoreboard, the winning team, the user who uploaded the match, and the lobby ID,
     and adds the match to the database.
@@ -40,11 +41,15 @@ def add_match(match_log_file: str, scoreboard: dict, winning_team: str, uploadin
     if matches.find_one({"hash": match_hash}):
         print("Match has already been uploaded")
     else:
-        matches.insert_one({"_id":lobby_id,
+        matches.insert_one({"_id": lobby_id,
                             "filename": match_log_file.replace(".txt", ""),
                             "scoreboard": scoreboard,
                             "winner": winning_team,
                             "hash": match_hash,
-                            "host":uploading_user,
-                            "team_1":team_1,
-                            "team_2":team_2})
+                            "host": uploading_user,
+                            "team_1": team_1,
+                            "team_2": team_2})
+
+
+def display_match(id):
+    return matches.find_one({"_id": id})
