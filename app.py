@@ -13,7 +13,7 @@ from keygen import generate_access_key
 from pymongo.errors import DuplicateKeyError
 import configparser
 from leaderboard import get_top_x_role, get_top_x_overall
-from user import User, get_user_by_discord, get_all_users
+from user import User, get_user_by_discord, get_all_users, adjust_team_rating
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
@@ -124,11 +124,7 @@ def post_upload(lobby_id):
                   str(lobby_id),
                   lobby_details["team_1"],
                   lobby_details["team_2"])
-        # TODO Update ratings based on winners :)
-        if winner == "1":
-            pass
-        if winner == "2":
-            pass
+        adjust_team_rating(lobby_details["team_1"],lobby_details["team_2"],winner)
 
         return "", 201
     return "", 415
