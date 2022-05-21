@@ -162,6 +162,13 @@ def set_lobby(bnet: str, lobby_id: str):
     db.users.update_one({"_id": this_user["_id"]}, update={"$set": this_user})
 
 def end_game(bnet: str, outcome):
+    """
+    It takes a battlenet ID and an outcome (1, 0, or -1) and updates the user's record in the database
+
+    :param bnet: The battlenet ID of the user
+    :type bnet: str
+    :param outcome: 1 for win, 0 for draw, -1 for loss
+    """
     this_user = db.users.find_one({"bnet": bnet})
     print(f"Ending Game for {bnet}")
     this_user["current_lobby"] = "None"

@@ -252,17 +252,12 @@ def signup():
     return render_template("signup.html", discord_name=str(user), id=user.id)
 
 
-@app.post("/signup/<id>/<name>")
+@app.post("/signup")
 @requires_authorization
-def post_signup(id, name):
-    """
-    We get the user's information from the form, and then we get their ranks from the API.
-
-    :param id: The discord user id
-    :param name: The name of the player
-    :return: A dictionary of the players ranks for each role
-    """
+def post_signup():
     user = discord.fetch_user()
+    user_id = user.id
+    name = str(user)
     # Through requests we get user information
     bnet = request.form["bnet"]
     try:
@@ -276,30 +271,14 @@ def post_signup(id, name):
     discord_name = name
     avatar = user.avatar_url
     roles = []
-    try:
-        request.form["tank"]
-        roles.append((
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Tank_icon.svg/228px-Tank_icon.svg.png?20190921150350",
-            "TANK"))
-    except Exception:
-        # This is rly bad code lol
-        pass
-    try:
-        request.form["dps"]
-        roles.append((
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Damage_icon.svg/1200px-Damage_icon.svg.png",
-            "DPS"))
-    except Exception:
-        # This is rly bad code lol
-        pass
-    try:
-        request.form["support"]
-        roles.append((
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Support_icon.svg/1200px-Support_icon.svg.png",
-            "SUPPORT"))
-    except Exception:
-        # This is rly bad code lol
-        pass
+
+    if request.form["tank"]:
+        roles.append("TANK")
+    if request.form["dps"]:
+        roles.append("DPS")
+    if request.form["support"]:
+        roles.append("support")
+
 
     # We now get the players ranks
     try:
@@ -325,7 +304,7 @@ def post_signup(id, name):
     # Placeholder new user object for now
     # As the user class automatically stores the user in the database
     try:
-        new_user = User(discord_name, bnet, roles, avatar, id, user.name, role_ranks)
+        new_user = User(discord_name, bnet, roles, avatar, user_id, user.name, role_ranks)
     except Exception as e:
         print(e)
         return "", 500
