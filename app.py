@@ -121,14 +121,15 @@ def post_upload(lobby_id):
         for player_name in hero_stats.keys():
             print(f"Updating {player_name}")
             update_player_hero_stats(player_name, hero_stats[player_name])
-        add_match(file.filename,
-                  scoreboard,
-                  winner,
-                  lobby_details["host"],
-                  str(lobby_id),
-                  lobby_details["team_1"],
-                  lobby_details["team_2"])
-        adjust_team_rating(lobby_details["team_1"], lobby_details["team_2"], winner)
+        state = add_match(file.filename,
+                          scoreboard,
+                          winner,
+                          lobby_details["host"],
+                          str(lobby_id),
+                          lobby_details["team_1"],
+                          lobby_details["team_2"])
+        if state is not -1:
+            adjust_team_rating(lobby_details["team_1"], lobby_details["team_2"], winner)
 
         return "", 201
     return "", 415

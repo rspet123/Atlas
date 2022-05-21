@@ -40,6 +40,7 @@ def add_match(match_log_file: str, scoreboard: dict, winning_team: str, uploadin
     match_hash = hash_match(match_log_file)
     if matches.find_one({"hash": match_hash}):
         print("Match has already been uploaded")
+        return -1
     else:
         matches.insert_one({"_id": lobby_id,
                             "filename": match_log_file.replace(".txt", ""),

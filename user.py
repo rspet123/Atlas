@@ -145,6 +145,15 @@ def create_user_from_json(data: dict):
     return new_user
 
 
+def adjust_user_games(bnet:str, outcome: int):
+    this_user = db.users.find_one({"bnet_name":bnet})
+    if outcome == 1:
+        # Win
+        pass
+
+
+
+
 def get_user_by_bnet(bnet: str):
     """
     > This function takes a bnet and returns a user
