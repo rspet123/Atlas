@@ -12,7 +12,7 @@ def get_top_x_role(top: int, role: str):
     """
     all_users = list(users.find())
     out = sorted(all_users, key=lambda i: i['ratings'][role]["mu"], reverse=True)[:top]
-    return {f"top {top} {role}": out}
+    return {f"top_{top}_{role}": out}
 
 
 def get_top_x_overall(top: int):
@@ -28,4 +28,4 @@ def get_top_x_overall(top: int):
     all_users = list(users.find())
     for role in roles:
         out.extend(sorted(all_users, key=lambda i: i['ratings'][role]["mu"], reverse=True)[:top])
-    return {f"top {top} overall": out[:10]}
+    return {f"top_{top}_overall": out[:10]}
