@@ -17,7 +17,7 @@ def add_to_queue(bnet: str, role: str):
     player = users.find_one({"bnet": bnet})
     if role.lower() == "dps":
         try:
-            dps_queue.insert_one({"_id": player["_id"], "bnet": bnet, "rank": player["ratings"]["damage"]["mu"], "role": "dps"})
+            dps_queue.insert_one({"_id": player["_id"], "bnet": bnet, "rank": player["ratings"]["dps"]["mu"], "role": "dps"})
         except Exception as e:
             # Player probably already in queue
             print(f"{type(e)}:{e}")
@@ -398,13 +398,13 @@ class PlayerQueue:
 if __name__ == '__main__':
     num_users = 11
 
-    for i in range(num_users):
-        try:
-            users.insert_one({"_id": f"player{i}", "bnet": f"player{i}", "ranks": {"tank": random.randint(1500, 5000),
-                                                                                   "dps": random.randint(1500, 5000),
-                                                                                   "support": random.randint(1500, 5000)}})
-        except Exception as e:
-            print(type(e))
+    #for i in range(num_users):
+    #    try:
+    #        users.insert_one({"_id": f"player{i}", "bnet": f"player{i}", "ranks": {"tank": random.randint(1500, 5000),
+    #                                                                               "dps": random.randint(1500, 5000),
+    #                                                                               "support": random.randint(1500, 5000)}})
+    #    except Exception as e:
+    #        print(type(e))
     empty_queue()
     for i in range(num_users):
         userbnet = users.find_one({"_id": f"player{i}"})["bnet"]

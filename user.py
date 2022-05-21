@@ -163,7 +163,7 @@ def adjust_user_games(bnet: str, outcome: int):
 
 
 def set_lobby(bnet: str, lobby_id: str):
-    this_user = db.users.find_one({"bnet_name": bnet})
+    this_user = db.users.find_one({"bnet": bnet})
     this_user["current_lobby"] = lobby_id
     db.users.update_one({"_id": this_user["_id"]}, update={"$set": this_user})
 
