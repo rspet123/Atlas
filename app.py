@@ -94,7 +94,6 @@ def ping():
 
 
 @app.post('/upload/<lobby_id>')
-@requires_authorization
 def post_upload(lobby_id):
     """
     It takes the file that was uploaded, parses it, and adds it to the database
@@ -125,7 +124,7 @@ def post_upload(lobby_id):
         add_match(file.filename,
                   scoreboard,
                   winner,
-                  str(user),
+                  lobby_details["host"],
                   str(lobby_id),
                   lobby_details["team_1"],
                   lobby_details["team_2"])
@@ -347,8 +346,8 @@ def log(log):
 @app.get('/game_logs')
 def logs():
     """
-    It lists all the files in the LOG_FOLDER directory and passes them to the view_games.html template
-    :return: The list of all the games that have been uploaded.
+    It returns a list of all the files in the `LOG_FOLDER` directory
+    :return: A dictionary with the list of matches and a status code of 200
     """
     """Shows all games"""
     uploaded_matches = os.listdir(LOG_FOLDER)

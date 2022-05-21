@@ -6,13 +6,13 @@ COLUMNS = ["Player", "Hero Damage Dealt", "Barrier Damage Dealt",
            "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
            "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt", "Hero", "Team"]
 STAT_COLUMNS = ["Hero Damage Dealt", "Barrier Damage Dealt",
-           "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
-           "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
-           "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
-           "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt"]
+                "Damage Blocked", "Damage Taken", "Deaths", "Eliminations", "Defensive Assists",
+                "Final Blows", "Environmental Deaths", "Environmental Kills", "Healing Dealt",
+                "Multikill Best", "Multikills", "Objective Kills", "Objective Assists", "Solo Kills",
+                "Ultimates Earned", "Ultimates Used", "Weapon Accuracy", "All Damage Dealt"]
 
 
-def parse_log(log, log_folder ="log_folder", columns=None):
+def parse_log(log, log_folder="log_folder", columns=None):
     """
     It takes a log file and returns a tuple containing the final player scoreboard [0] and player hero time [1]
 
@@ -62,20 +62,22 @@ def parse_log(log, log_folder ="log_folder", columns=None):
         prev = time
     return time_stamp, player_heroes, log_stats
 
-def generate_key(size = 24):
+
+def generate_key(size=24):
     """
     It generates a random string of characters between 65 and 122, and returns it as a byte string
 
     :param size: The size of the key to generate. Defaults to 24, defaults to 24 (optional)
     :return: A string of random characters
     """
-    #48 - 122
+    # 48 - 122
     key = ""
     for _ in range(size):
-        key+=chr(random.randint(65,122))
-    return bytes(key,"ascii")
+        key += chr(random.randint(65, 122))
+    return bytes(key, "ascii")
 
-def diff_stats(players:dict,player:dict,last_tick:dict,stat:str):
+
+def diff_stats(players: dict, player: dict, last_tick: dict, stat: str):
     """
     If the player exists in the players dictionary, and the hero exists in the player's dictionary, and the stat exists in
     the hero's dictionary, then add the stat to the hero's dictionary
@@ -98,16 +100,16 @@ def diff_stats(players:dict,player:dict,last_tick:dict,stat:str):
         print(f"incorrect type for {player['Player']} {stat}, cannot cast {player[stat]} as float")
 
 
+data_template = {"Hero": "", 'Hero Damage Dealt': 0,
+                 'Barrier Damage Dealt': 0, 'Damage Blocked': 0.0,
+                 'Damage Taken': 0, 'Deaths': 0, 'Eliminations': 0,
+                 'Defensive Assists': 0, 'Final Blows': 0,
+                 'Environmental Deaths': 0.0, 'Environmental Kills': 0.0,
+                 'Healing Dealt': 0.0, 'Multikill Best': 0.0, 'Multikills': 0.0,
+                 'Objective Kills': 0, 'Objective Assists': 0.0, 'Solo Kills': 0,
+                 'Ultimates Earned': 0, 'Ultimates Used': 0, 'Weapon Accuracy': 0,
+                 'All Damage Dealt': 0}
 
-data_template = {"Hero":"", 'Hero Damage Dealt': 0,
-            'Barrier Damage Dealt': 0, 'Damage Blocked': 0.0,
-            'Damage Taken': 0, 'Deaths': 0, 'Eliminations': 0,
-            'Defensive Assists': 0, 'Final Blows': 0,
-            'Environmental Deaths': 0.0, 'Environmental Kills': 0.0,
-            'Healing Dealt': 0.0, 'Multikill Best': 0.0, 'Multikills': 0.0,
-            'Objective Kills': 0, 'Objective Assists': 0.0, 'Solo Kills': 0,
-            'Ultimates Earned': 0, 'Ultimates Used': 0, 'Weapon Accuracy': 0,
-            'All Damage Dealt': 0}
 
 def parse_hero_stats(stats_log):
     """
@@ -132,4 +134,3 @@ def parse_hero_stats(stats_log):
                     diff_stats(players, player, last_tick, stat)
             last_tick[player["Player"]] = player
     return players
-
