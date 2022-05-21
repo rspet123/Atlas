@@ -49,9 +49,15 @@ class User:
                                  "dps": {"sigma": 0, "mu": 0},
                                  "support": {"sigma": 0, "mu": 0}}
             for role in role_ranks.items():
-                self.role_ratings[role[0]]["sigma"] = Rating((role[1] / 100), 8.33333).sigma
-                self.role_ratings[role[0]]["mu"] = Rating((role[1] / 100), 8.33333).mu
-                print(f"Setting {role[0]} to {(role[1] / 100)} for {self.name}")
+                if role[0] == "damage":
+                    self.role_ratings["dps"]["sigma"] = Rating((role[1] / 100), 8.33333).sigma
+                    self.role_ratings["dps"]["mu"] = Rating((role[1] / 100), 8.33333).mu
+                    print(f"Setting dps to {(role[1] / 100)} for {self.name}")
+                else:
+                    self.role_ratings[role[0]]["sigma"] = Rating((role[1] / 100), 8.33333).sigma
+                    self.role_ratings[role[0]]["mu"] = Rating((role[1] / 100), 8.33333).mu
+                    print(f"Setting {role[0]} to {(role[1] / 100)} for {self.name}")
+
         else:
             self.role_ratings = ratings
 
