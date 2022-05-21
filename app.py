@@ -128,7 +128,7 @@ def post_upload(lobby_id):
                           str(lobby_id),
                           lobby_details["team_1"],
                           lobby_details["team_2"])
-        if state is not -1:
+        if state != -1:
             adjust_team_rating(lobby_details["team_1"], lobby_details["team_2"], winner)
 
         return "", 201
