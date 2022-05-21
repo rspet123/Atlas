@@ -24,7 +24,7 @@ def get_top_x_overall(top: int):
     :return: A dictionary with the key "top 10 overall" and the value is a list of the top 10 users.
     """
     out = []
-    roles = ["tank", "damage", "support"]
+    roles = ["tank", "dps", "support"]
     all_users = list(users.find())
     for role in roles:
         out.extend(sorted(all_users, key=lambda i: i['ratings'][role]["mu"], reverse=True)[:top])

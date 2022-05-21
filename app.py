@@ -273,9 +273,9 @@ def post_signup():
     roles = []
 
     if request.form["tank"]:
-        roles.append("TANK")
+        roles.append("tank")
     if request.form["dps"]:
-        roles.append("DPS")
+        roles.append("dps")
     if request.form["support"]:
         roles.append("support")
 
