@@ -29,7 +29,9 @@ class Lobby:
         # Taking the hash of the two lists and taking the first 8 characters to make the lobby name
         self.lobby_name = str(hash(host_idx) + hash(str(team_1)) + hash(str(team_2)))[:8]
         self.completed = False
-        lobbies.insert_one({"_id": self.lobby_name, "host": host, "team_1": team_1, "team_2": team_2})
+        for player in (team_1 + team_2):
+            set_lobby(player["bnet"],self.lobby_name)
+        lobbies.insert_one({"_id": self.lobby_name, "host": host, "team_1": team_1, "team_2": team_2, "finished": False})
 
     def complete(self):
         """

@@ -145,13 +145,21 @@ def create_user_from_json(data: dict):
     return new_user
 
 
-def adjust_user_games(bnet:str, outcome: int):
-    this_user = db.users.find_one({"bnet_name":bnet})
+def adjust_user_games(bnet: str, outcome: int):
+    this_user = db.users.find_one({"bnet_name": bnet})
     if outcome == 1:
-        # Win
-        pass
+        this_user["wins"] = this_user.get("wins", 0) + 1
+    if outcome == 0:
+        this_user["draws"] = this_user.get("draws", 0) + 1
+    if outcome == -1:
+        this_user["losses"] = this_user.get("losses", 0) + 1
+    db.users.update_one({"_id": this_user["_id"]}, update={"$set": this_user})
 
 
+def set_lobby(bnet: str, lobby_id: str):
+    this_user = db.users.find_one({"bnet_name": bnet})
+    this_user["current_lobby"] = lobby_id
+    db.users.update_one({"_id": this_user["_id"]}, update={"$set": this_user})
 
 
 def get_user_by_bnet(bnet: str):

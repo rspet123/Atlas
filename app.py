@@ -10,7 +10,7 @@ from keygen import generate_access_key
 from pymongo.errors import DuplicateKeyError
 import configparser
 from leaderboard import get_top_x_role, get_top_x_overall
-from user import User, get_user_by_discord, get_all_users, adjust_team_rating, update_player_hero_stats
+from user import User, get_user_by_discord, get_all_users, adjust_team_rating, update_player_hero_stats, set_lobby
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
@@ -130,6 +130,10 @@ def post_upload(lobby_id):
                           lobby_details["team_2"])
         if state != -1:
             adjust_team_rating(lobby_details["team_1"], lobby_details["team_2"], winner)
+            lobby_details["finished"] = True
+            db.lobbies.update_one({"_id": lobby_details["_id"]}, update={"$set": lobby_details})
+            for player in (lobby_details["team_1"] + lobby_details["team_2"]):
+                set_lobby(player["bnet_name"], "")
 
         return "", 201
     return "", 415
