@@ -34,7 +34,7 @@ class User:
         :type name: str
         :param role_ranks: a dictionary of the user's role ranks
         :type role_ranks: dict
-        :param update_db: Whether or not to update the database with the new user, defaults to True (optional)
+        :param update_db: Whether to update the database with the new user, defaults to True (optional)
         """
         self.discord_name = discord_name
         self.bnet_name = bnet_name
@@ -161,6 +161,17 @@ def set_lobby(bnet: str, lobby_id: str):
     this_user["current_lobby"] = lobby_id
     db.users.update_one({"_id": this_user["_id"]}, update={"$set": this_user})
 
+def end_game(bnet: str, outcome):
+    this_user = db.users.find_one({"bnet": bnet})
+    print(f"Ending Game for {bnet}")
+    this_user["current_lobby"] = "None"
+    if outcome == 1:
+        this_user["wins"] = this_user.get("wins", 0) + 1
+    if outcome == 0:
+        this_user["draws"] = this_user.get("draws", 0) + 1
+    if outcome == -1:
+        this_user["losses"] = this_user.get("losses", 0) + 1
+    db.users.update_one({"_id": this_user["_id"]}, update={"$set": this_user})
 
 def get_user_by_bnet(bnet: str):
     """
@@ -252,8 +263,8 @@ def adjust_team_rating(team_1: list, team_2: list, winner: str):
     :type winner: str
     :return: 0 if we aren't given a winner, else void
     """
-    team_1_players = [[get_user_by_bnet(player["bnet"]), player["queued_role"]] for player in team_1]
-    team_2_players = [[get_user_by_bnet(player["bnet"]), player["queued_role"]] for player in team_2]
+    team_1_players = [[get_user_by_bnet(player["bnet"]), player["role"]] for player in team_1]
+    team_2_players = [[get_user_by_bnet(player["bnet"]), player["role"]] for player in team_2]
     team_1_ratings = [player[0].get_rating(player[1]) for player in team_1_players]
     team_2_ratings = [player[0].get_rating(player[1]) for player in team_2_players]
 
