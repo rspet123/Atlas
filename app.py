@@ -502,7 +502,7 @@ def hero_stat_leaderboard(hero, statname):
     # get all players who have played that specific hero
     player_list = [player for player in player_list if player["hero_stats"].get(hero, False)]
     player_list = sorted(player_list, key=lambda i: i["hero_stats"][hero][statname], reverse=True)
-    return {f"top {top}": player_list[:top]}
+    return {f"top_{top}": player_list[:top]}
 
 
 @socketio.on_error()
