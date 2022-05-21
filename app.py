@@ -10,7 +10,7 @@ from keygen import generate_access_key
 from pymongo.errors import DuplicateKeyError
 import configparser
 from leaderboard import get_top_x_role, get_top_x_overall
-from user import User, get_user_by_discord, get_all_users, adjust_team_rating, update_player_hero_stats, set_lobby,end_game
+from user import User, get_user_by_discord, get_all_users, adjust_team_rating, update_player_hero_stats, end_game
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 import requests
 import json
@@ -265,7 +265,7 @@ def post_signup():
     except Exception:
         # No key
         return "", 401
-    if not key == generate_access_key(int(id)):
+    if not key == generate_access_key(int(user_id)):
         # No key
         return "", 401
     discord_name = name
